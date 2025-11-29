@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  scylla:
+    image: scylladb/scylla
+    ports:
+      - "9042:9042"
+
+  agence_de_voyage:
+    container_name: agence_de_voyage
+    build: .
+    image: agence_voyage_backend:latest
+    ports:
+      - "9025:8080"
+    depends_on:
+      - scylla
+    environment:
+      - SPRING_CASSANDRA_CONTACT_POINTS=scylla
