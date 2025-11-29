@@ -8,8 +8,8 @@ Le système permet d’enregistrer et de gérer les sociétés de transport, leu
 
 ## Technologies utilisées
 
-- (Java 17+ / JDK17+)[https://www.oracle.com/java/technologies/downloads/#jdk25-windows]
-- (Docker / Docker Compose)[https://www.youtube.com/watch?v=FKdQxLiABlQ]
+- [Java 17+ / JDK17+](https://www.oracle.com/java/technologies/downloads/#jdk25-windows)
+- [Docker / Docker Compose](https://www.youtube.com/watch?v=FKdQxLiABlQ)
 - **Spring Boot**
 - **ScyllaDB**
 
