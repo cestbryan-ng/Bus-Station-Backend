@@ -31,9 +31,10 @@ docker exec -it <ContainerID du containeur scylla crée précedenement> cqlsh
 # Pour faire compiler le projet
 cd agence_de_voyaage_application
 
-# Puis naviguer le fichier application.properties
-# Changer le port 8080 à un autre port non utilisé
+# Puis naviguer vers le fichier 
+# ./agence_de_voyaage_application/src/main/resources/application.properties
+# Changer le port 8080 vers un autre port non utilisé
 
 mvn spring-boot:run
-# Assurer vous que le containeur de la BD est active
+# Assurez vous que le containeur de la BD Scylla est active
 ```
