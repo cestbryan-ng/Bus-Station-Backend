@@ -28,8 +28,8 @@ docker exec -it <ContainerID du containeur scylla crée précedenement> cqlsh
 # Ensuite vous executez le script cql(script de création des tables), le script il se situe à
 # ./database_agence_voyage/src/main/resources/schema_reservation_annulation.cql
 
-# Pour faire compiler le projet
-cd agence_de_voyaage_application
+# Pour faire compiler le projetf
+cd agence_de_voyage_application
 
 # Puis naviguer vers le fichier 
 # ./agence_de_voyaage_application/src/main/resources/application.properties
