@@ -9,12 +9,14 @@ assure le contrôle et le suivi des opérations quotidiennes d’une gare : vali
 départs et arrivées, gestion du ticket de quai, collecte des taxes, gestion des sanctions et supervision du
 stationnement et ainsi que la gestion des reservations de voyage pour les clients.
 
+
 ## Technologies utilisées
 
 - [Java 17+ / JDK17+](https://www.oracle.com/java/technologies/downloads/#jdk25-windows)
 - [Docker / Docker Compose](https://www.youtube.com/watch?v=FKdQxLiABlQ)
-- **Spring Boot**
-- **ScyllaDB**
+- [Postgresql](https://www.postgresql.org/download/)
+- - **Spring Boot**
+
 
 ## SetUp
 
