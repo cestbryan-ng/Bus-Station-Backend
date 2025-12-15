@@ -15,7 +15,7 @@ stationnement et ainsi que la gestion des reservations de voyage pour les client
 - [Java 17+ / JDK17+](https://www.oracle.com/java/technologies/downloads/#jdk25-windows)
 - [Docker / Docker Compose](https://www.youtube.com/watch?v=FKdQxLiABlQ)
 - [Postgresql](https://www.postgresql.org/download/)
-- - **Spring Boot**
+- **Spring Boot**
 
 
 ## SetUp
@@ -24,7 +24,7 @@ Pour compiler le projet suivez ces instructions :
 
 - Créer la base de donnée psql avec pour nom **agence_voyage**
 - Puis executer le script sql d'export qui se trouve à la racine **export.sql**
-- Une fois la base de donnée crée, modifier les fichiers application.propreties présents dans les dossiers **agence_de_voyage_application** et **database_agence_voyage**, mettez les identifiants du compte pour se connecter à votre bd
+- Une fois la base de donnée crée, modifier les fichiers *application.propreties* présents dans les dossiers **agence_de_voyage_application** et **database_agence_voyage**, mettez les identifiants du compte pour se connecter à votre bd
 - Suivez ces commandes, pour démarrer le serveur
 
 ```bash
