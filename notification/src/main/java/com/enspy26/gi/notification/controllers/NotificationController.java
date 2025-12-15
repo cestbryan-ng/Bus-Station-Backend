@@ -5,7 +5,6 @@ import com.enspy26.gi.notification.factory.NotificationFactory;
 import com.enspy26.gi.notification.models.NotificationEvent;
 import com.enspy26.gi.notification.enums.NotificationType;
 import com.enspy26.gi.notification.enums.RecipientType;
-import com.enspy26.gi.database_agence_voyage.models.User;
 import com.enspy26.gi.database_agence_voyage.repositories.UserRepository;
 
 import lombok.AllArgsConstructor;

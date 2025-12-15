@@ -1,25 +1,44 @@
 package com.enspy26.gi.database_agence_voyage.models;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.cassandra.core.mapping.PrimaryKey;
-import org.springframework.data.cassandra.core.mapping.Table;
 
 import java.util.UUID;
 
-@Table
+@Entity
+@Table(name = "vehicule")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Vehicule {
-    @PrimaryKey
+    @Id
+    @Column(name = "idvehicule")
     private UUID idVehicule;
+
+    @Column(nullable = false)
     private String nom;
+
+    @Column(nullable = false)
     private String modele;
+
+    @Column(nullable = true)
     private String description;
+
+    @Column(name = "nbrplaces", nullable = false)
     private int nbrPlaces;
-    private String PlaqueMatricule;
+
+    @Column(name = "plaquematricule", nullable = true)
+    private String plaqueMatricule;
+
+    @Column(name = "lienphoto", nullable = true)
     private String lienPhoto;
+
+    @Column(name = "idagencevoyage", nullable = true)
     private UUID idAgenceVoyage;
 }

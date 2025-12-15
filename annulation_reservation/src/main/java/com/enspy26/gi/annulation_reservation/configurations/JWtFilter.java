@@ -15,45 +15,44 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
 @Service
 @AllArgsConstructor
 public class JWtFilter extends OncePerRequestFilter {
 
-  private JwtService jwtService;
+    private JwtService jwtService;
 
-  private UserDetailsService userDetailsService;
+    private UserDetailsService userDetailsService;
 
-  @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-      FilterChain filterChain)
-      throws ServletException, IOException {
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
-    String token = null;
-    String username = null;
-    boolean isTokenExpired = false;
+        String token = null;
+        String username = null;
+        boolean isTokenExpired = false;
 
-    String authorization = request.getHeader("Authorization");
+        String authorization = request.getHeader("Authorization");
 
-    if (authorization != null && authorization.startsWith("Bearer ")) {
-      token = authorization.substring(7);
-      isTokenExpired = jwtService.isTokenExpired(token);
-      // tokenDansLaBD = this.jwtService.tokenByValue(token);
-      username = jwtService.extractUsername(token);
+        if (authorization != null && authorization.startsWith("Bearer ")) {
+            token = authorization.substring(7);
+            isTokenExpired = jwtService.isTokenExpired(token);
+            // tokenDansLaBD = this.jwtService.tokenByValue(token);
+            username = jwtService.extractUsername(token);
+        }
+        if (!isTokenExpired
+                && username != null
+                // && tokenDansLaBD.getUtilisateur().getEmail().equals(username)
+                && SecurityContextHolder.getContext().getAuthentication() == null) {
+            User utilisateur = (User) userDetailsService.loadUserByUsername(username);
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(utilisateur,
+                    token, utilisateur.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        }
+
+        filterChain.doFilter(request, response);
+
     }
-    if (!isTokenExpired
-        && username != null
-        // && tokenDansLaBD.getUtilisateur().getEmail().equals(username)
-        && SecurityContextHolder.getContext().getAuthentication() == null) {
-      User utilisateur = (User) userDetailsService.loadUserByUsername(username);
-      UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(utilisateur,
-          token, utilisateur.getAuthorities());
-      SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-    }
-
-    filterChain.doFilter(request, response);
-
-  }
 
 }

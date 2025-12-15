@@ -34,7 +34,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -179,7 +178,7 @@ public class VoyageService {
                 "https://media.istockphoto.com/id/2171315718/photo/car-for-traveling-with-a-mountain-road.jpg?s=1024x1024&w=is&k=20&c=y5XqIYLzxfb4kDTZpQgElyeiIGL34YzJrvHxbgp4Ud0=");
         voyage.setBigImage(
                 "https://media.istockphoto.com/id/2171315718/photo/car-for-traveling-with-a-mountain-road.jpg?s=1024x1024&w=is&k=20&c=y5XqIYLzxfb4kDTZpQgElyeiIGL34YzJrvHxbgp4Ud0=");
-        voyage.setAmenities(voyageDto.getAmenities()); // Set amenities as a list
+        voyage.setAmenities(VoyageMapper.amenitiesListToString(voyageDto.getAmenities())); // Set amenities as a list
 
         // Création de la ligne de voyage associé
         LigneVoyage ligneVoyage = new LigneVoyage();

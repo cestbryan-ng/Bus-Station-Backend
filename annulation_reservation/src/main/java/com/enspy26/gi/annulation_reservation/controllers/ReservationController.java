@@ -30,10 +30,6 @@ import com.enspy26.gi.annulation_reservation.configurations.SecurityUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-
-import jakarta.validation.Valid;
 import java.util.UUID;
 
 @RestController
@@ -53,8 +49,8 @@ public class ReservationController {
     })
     @GetMapping("/utilisateur/{idUser}")
     public Page<ReservationPreviewDTO> getAllReservationsForUser(@PathVariable UUID idUser,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+                                                                 @RequestParam(defaultValue = "0") int page,
+                                                                 @RequestParam(defaultValue = "10") int size) {
         if (!SecurityUtils.getCurrentUserId().equals(idUser)) {
             new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                     "Vous n'êtes pas autorisé à voir les réservations d'un autre");

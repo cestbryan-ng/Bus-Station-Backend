@@ -1,21 +1,18 @@
 package com.enspy26.gi.database_agence_voyage.repositories;
 
 import java.util.UUID;
-
-import org.springframework.data.cassandra.repository.AllowFiltering;
-import org.springframework.data.cassandra.repository.CassandraRepository;
-import org.springframework.stereotype.Repository;
-
-import com.enspy26.gi.database_agence_voyage.models.ChauffeurAgenceVoyage;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.enspy26.gi.database_agence_voyage.models.ChauffeurAgenceVoyage;
+
 @Repository
-public interface ChauffeurAgenceVoyageRepository extends CassandraRepository<ChauffeurAgenceVoyage, UUID> {
+public interface ChauffeurAgenceVoyageRepository extends JpaRepository<ChauffeurAgenceVoyage, UUID> {
 
-  @AllowFiltering
-  List<ChauffeurAgenceVoyage> findByAgenceVoyageId(UUID agenceVoyageId);
+    List<ChauffeurAgenceVoyage> findByAgenceVoyageId(UUID agenceVoyageId);
 
-  @AllowFiltering
-  Optional<ChauffeurAgenceVoyage> findByUserId(UUID userId);
+    Optional<ChauffeurAgenceVoyage> findByUserId(UUID userId);
 }

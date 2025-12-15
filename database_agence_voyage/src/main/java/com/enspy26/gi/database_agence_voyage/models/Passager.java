@@ -2,25 +2,40 @@ package com.enspy26.gi.database_agence_voyage.models;
 
 import java.util.UUID;
 
-import org.springframework.data.cassandra.core.mapping.PrimaryKey;
-import org.springframework.data.cassandra.core.mapping.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Table
+@Entity
+@Table(name = "passager")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Passager {
-  @PrimaryKey
-  private UUID idPassager;
-  private String numeroPieceIdentific;
-  private String nom;
-  private String genre;
-  private int age;
-  private int nbrBaggage;
-  private UUID idReservation;
-  private int placeChoisis;
+
+    @Id
+    private UUID idPassager;
+
+    @Column(name = "numeropieceidentific")
+    private String numeroPieceIdentific;
+
+    private String nom;
+
+    private String genre;
+
+    private int age;
+
+    @Column(name = "nbrbaggage")
+    private int nbrBaggage;
+
+    @Column(name = "idreservation")
+    private UUID idReservation;
+
+    @Column(name = "placechoisis")
+    private int placeChoisis;
 }

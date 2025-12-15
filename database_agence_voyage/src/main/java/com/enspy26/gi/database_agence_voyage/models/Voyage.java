@@ -1,69 +1,127 @@
 package com.enspy26.gi.database_agence_voyage.models;
 
-import java.time.Duration;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.data.cassandra.core.mapping.PrimaryKey;
-import org.springframework.data.cassandra.core.mapping.Table;
-
-import com.enspy26.gi.database_agence_voyage.enums.Amenities;
-import com.enspy26.gi.database_agence_voyage.enums.StatutVoyage;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Transient;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Table
+import java.time.Duration;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.Arrays;
+
+import com.enspy26.gi.database_agence_voyage.enums.Amenities;
+import com.enspy26.gi.database_agence_voyage.enums.StatutVoyage;
+import com.enspy26.gi.database_agence_voyage.utils.DurationConverter;
+
+@Entity
+@Table(name = "voyage")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Voyage {
-  @PrimaryKey
-  private UUID idVoyage;
-  private String titre;
-  private String description;
-  private Date dateDepartPrev;
-  private String lieuDepart;
-  private Date dateDepartEffectif;
-  private Date dateArriveEffectif;
-  private String lieuArrive;
-  private Date heureDepartEffectif;
-  private String pointDeDepart;
-  private String pointArrivee;
-  private Duration dureeVoyage;
-  private Date heureArrive;
-  private int nbrPlaceReservable;// Nbre de place qu'on peut encore reserve
-  private int nbrPlaceReserve;// Nbre de place qu'on a reserve
-  private int nbrPlaceConfirm;// Nbre de place qu'on a confirmer
-  private int nbrPlaceRestante;//
-  private Date datePublication;
-  private Date dateLimiteReservation;
-  private Date dateLimiteConfirmation;
-  private StatutVoyage statusVoyage;
-  private String smallImage;
-  private String bigImage;
+    @Id
+    @Column(name = "idvoyage")
+    private UUID idVoyage;
 
-  private String amenities; // JSON string for amenities
+    @Column(nullable = false)
+    private String titre;
 
-  public void setAmenities(List<Amenities> amenitiesList) {
-    if (amenitiesList == null || amenitiesList.isEmpty()) {
-      this.amenities = "";
-      return;
+    @Column(nullable = true)
+    private String description;
+
+    @Column(name = "datedepartprev", nullable = true)
+    private Date dateDepartPrev;
+
+    @Column(name = "lieudepart", nullable = true)
+    private String lieuDepart;
+
+    @Column(name = "datedeparteffectif", nullable = true)
+    private Date dateDepartEffectif;
+
+    @Column(name = "datearriveeffectif", nullable = true)
+    private Date dateArriveEffectif;
+
+    @Column(name = "lieuarrive", nullable = true)
+    private String lieuArrive;
+
+    @Column(name = "heuredeparteffectif", nullable = true)
+    private Date heureDepartEffectif;
+
+    @Column(name = "pointdedepart", nullable = true)
+    private String pointDeDepart;
+
+    @Column(name = "pointarrivee", nullable = true)
+    private String pointArrivee;
+
+    @Convert(converter = DurationConverter.class)
+    @Column(name = "dureevoyage", nullable = true)
+    private Duration dureeVoyage;
+
+    @Column(name = "heurearrive", nullable = true)
+    private Date heureArrive;
+
+    @Column(name = "nbrplacereservable", nullable = false)
+    private int nbrPlaceReservable;
+
+    @Column(name = "nbrplacereserve", nullable = false)
+    private int nbrPlaceReserve;
+
+    @Column(name = "nbrplaceconfirm", nullable = false)
+    private int nbrPlaceConfirm;
+
+    @Column(name = "nbrplacerestante", nullable = false)
+    private int nbrPlaceRestante;
+
+    @Column(name = "datepublication", nullable = true)
+    private Date datePublication;
+
+    @Column(name = "datelimitereservation", nullable = true)
+    private Date dateLimiteReservation;
+
+    @Column(name = "datelimiteconfirmation", nullable = true)
+    private Date dateLimiteConfirmation;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "statusvoyage", nullable = true)
+    private StatutVoyage statusVoyage;
+
+    @Column(name = "smallimage", nullable = true)
+    private String smallImage;
+
+    @Column(name = "bigimage", nullable = true)
+    private String bigImage;
+
+    @Column(name = "amenities", nullable = true, columnDefinition = "text")
+    private String amenities; // stored as comma-separated string
+
+    @Transient
+    public List<Amenities> getAmenitiesList() {
+        if (amenities == null || amenities.isEmpty()) {
+            return List.of();
+        }
+        return Arrays.stream(amenities.split(","))
+                .map(Amenities::valueOf)
+                .collect(Collectors.toList());
     }
-    this.amenities = amenitiesList.stream()
-        .map(Amenities::name)
-        .reduce((a, b) -> a + "," + b)
-        .orElse("");
-  }
 
-  public List<Amenities> getAmenities() {
-    if (amenities == null || amenities.isEmpty()) {
-      return List.of();
+    public void setAmenitiesList(List<Amenities> amenitiesList) {
+        if (amenitiesList == null || amenitiesList.isEmpty()) {
+            this.amenities = "";
+        } else {
+            this.amenities = amenitiesList.stream()
+                    .map(Amenities::name)
+                    .collect(Collectors.joining(","));
+        }
     }
-    return List.of(amenities.split(",")).stream()
-        .map(Amenities::valueOf)
-        .toList();
-  }
 }

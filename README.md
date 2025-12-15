@@ -20,23 +20,19 @@ stationnement et ainsi que la gestion des reservations de voyage pour les client
 
 ## SetUp
 
-Pour compiler le projet suivez ces instructions
+Pour compiler le projet suivez ces instructions :
+
+- Créer la base de donnée psql avec pour nom **agence_voyage**
+- Puis executer le script sql d'export qui se trouve à la racine **export.sql**
+- Une fois la base de donnée crée, modifier les fichiers application.propreties présents dans les dossiers **agence_de_voyage_application** et **database_agence_voyage**, mettez les identifiants du compte pour se connecter à votre bd
+- Suivez ces commandes, pour démarrer le serveur
 
 ```bash
-docker-compose up --build
-# Vous aurez probablement une erreur c'est normal, les tables sont pas encore initialisées et pour se faire
+nvm clean install
 
-docker exec -it <ContainerID du containeur scylla crée précedenement> cqlsh
-# Ensuite vous executez le script cql(script de création des tables), le script il se situe à
-# ./database_agence_voyage/src/main/resources/schema_reservation_annulation.cql
-
-# Pour faire compiler le projetf
 cd agence_de_voyage_application
+nvm spring-boot:run
 
-# Puis naviguer vers le fichier 
-# ./agence_de_voyaage_application/src/main/resources/application.properties
-# Changer le port 8080 vers un autre port non utilisé
-
-mvn spring-boot:run
-# Assurez vous que le containeur de la BD Scylla est active
+# Swagger
+# /api/swagger-ui/index.html
 ```

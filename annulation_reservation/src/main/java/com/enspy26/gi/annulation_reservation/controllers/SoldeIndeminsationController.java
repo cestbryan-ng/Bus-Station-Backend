@@ -77,7 +77,7 @@ public class SoldeIndeminsationController {
     })
     @PutMapping("/{id}")
     public Mono<ResponseEntity<SoldeIndemnisation>> updateVoyage(@PathVariable UUID id,
-            @RequestBody SoldeIndemnisation solde) {
+                                                                 @RequestBody SoldeIndemnisation solde) {
         return Mono.fromCallable(() -> soldeIndemnisationService.findById(id))
                 .subscribeOn(Schedulers.boundedElastic())
                 .flatMap(existingSolde -> {

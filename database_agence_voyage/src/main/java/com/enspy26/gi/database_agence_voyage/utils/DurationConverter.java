@@ -1,7 +1,7 @@
 package com.enspy26.gi.database_agence_voyage.utils;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 import java.time.Duration;
 
 @Converter(autoApply = true)

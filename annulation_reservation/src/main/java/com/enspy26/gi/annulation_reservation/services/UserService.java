@@ -31,7 +31,6 @@ import com.enspy26.gi.database_agence_voyage.repositories.AgenceVoyageRepository
 import com.enspy26.gi.database_agence_voyage.repositories.ChauffeurAgenceVoyageRepository;
 import com.enspy26.gi.database_agence_voyage.repositories.UserRepository;
 
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

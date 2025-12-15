@@ -6,7 +6,6 @@ import java.util.UUID;
 import com.enspy26.gi.database_agence_voyage.enums.RoleType;
 import com.enspy26.gi.database_agence_voyage.models.User;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data

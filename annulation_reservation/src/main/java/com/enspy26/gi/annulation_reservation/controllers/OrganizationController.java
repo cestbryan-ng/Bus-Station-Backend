@@ -27,22 +27,22 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrganizationController {
 
-  private final OrganizationService organizationService;
+    private final OrganizationService organizationService;
 
-  @Operation(summary = "Obtenir toutes les agences d'une organisations", description = "Récupère la liste de toutes les agences de l'organisation")
-  @ApiResponses(value = {
-          @ApiResponse(responseCode = "200", description = "Liste récupérée avec succès", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = AgenceVoyage.class))))
-  })
-  @SecurityRequirement(name = "bearerAuth")
-  @GetMapping("/agencies/{organisationId}")
-  public ResponseEntity<List<AgenceVoyage>> getAllCoupons(@PathVariable UUID organisationId) {
-    List<AgenceVoyage> agencies = organizationService.findAllAgencies(organisationId);
-    return new ResponseEntity<>(agencies, HttpStatus.OK);
-  }
+    @Operation(summary = "Obtenir toutes les agences d'une organisations", description = "Récupère la liste de toutes les agences de l'organisation")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Liste récupérée avec succès", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = AgenceVoyage.class))))
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/agencies/{organisationId}")
+    public ResponseEntity<List<AgenceVoyage>> getAllCoupons(@PathVariable UUID organisationId) {
+        List<AgenceVoyage> agencies = organizationService.findAllAgencies(organisationId);
+        return new ResponseEntity<>(agencies, HttpStatus.OK);
+    }
 
-  @PostMapping
-  public ResponseEntity<OrganizationDto> createOrganization(@Valid @RequestBody CreateOrganizationRequest request) {
-    OrganizationDto createdOrganization = organizationService.createOrganization(request);
-    return ResponseEntity.status(HttpStatus.CREATED).body(createdOrganization);
-  }
+    @PostMapping
+    public ResponseEntity<OrganizationDto> createOrganization(@Valid @RequestBody CreateOrganizationRequest request) {
+        OrganizationDto createdOrganization = organizationService.createOrganization(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdOrganization);
+    }
 }

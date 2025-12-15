@@ -19,48 +19,36 @@ import com.enspy26.gi.annulation_reservation.exception.RegistrationException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler(ResponseStatusException.class)
-  public ResponseEntity<ErrorResponse> handleResponseStatusException(
-      ResponseStatusException ex, WebRequest request) {
-    ErrorResponse errorResponse = new ErrorResponse(
-        LocalDateTime.now(),
-        ex.getStatusCode().value(),
-        ex.getReason(),
-        request.getDescription(true));
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException ex, WebRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(), ex.getStatusCode().value(), ex.getReason(), request.getDescription(true));
 
-    return new ResponseEntity<>(errorResponse, ex.getStatusCode());
-  }
+        return new ResponseEntity<>(errorResponse, ex.getStatusCode());
+    }
 
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseEntity<Map<String, String>> handleValidationExceptions(
-      MethodArgumentNotValidException ex) {
-    Map<String, String> errors = new HashMap<>();
-    ex.getBindingResult().getAllErrors().forEach((error) -> {
-      String fieldName = ((FieldError) error).getField();
-      String errorMessage = error.getDefaultMessage();
-      errors.put(fieldName, errorMessage);
-    });
-    return ResponseEntity.badRequest().body(errors);
-  }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        return ResponseEntity.badRequest().body(errors);
+    }
 
-  @ExceptionHandler(Exception.class)
-  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  public ResponseEntity<ErrorResponse> handleAllUncaughtException(
-      Exception ex, WebRequest request) {
-    System.out.println(ex.getMessage());
-    ErrorResponse errorResponse = new ErrorResponse(
-        LocalDateTime.now(),
-        HttpStatus.INTERNAL_SERVER_ERROR.value(),
-        "Une erreur inattendue s'est produite",
-        request.getDescription(false));
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<ErrorResponse> handleAllUncaughtException(Exception ex, WebRequest request) {
+        System.out.println(ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value(), "Une erreur inattendue s'est produite", request.getDescription(false));
 
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-  }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
 
-  @ExceptionHandler(RegistrationException.class)
-  public ResponseEntity<Map<String, String>> handleRegistrationException(
-      RegistrationException ex) {
-    return ResponseEntity.status(ex.getStatus()).body(ex.getErrors());
-  }
+    @ExceptionHandler(RegistrationException.class)
+    public ResponseEntity<Map<String, String>> handleRegistrationException(RegistrationException ex) {
+        return ResponseEntity.status(ex.getStatus()).body(ex.getErrors());
+    }
 }

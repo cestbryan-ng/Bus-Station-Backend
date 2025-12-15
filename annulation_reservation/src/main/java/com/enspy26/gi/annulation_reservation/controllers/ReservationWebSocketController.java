@@ -18,15 +18,15 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class ReservationWebSocketController {
 
-  private final ReservationService reservationService;
+    private final ReservationService reservationService;
 
-  // Quand un client tente de réserver une place
-  @MessageMapping("/voyage/{voyageId}/reserver")
-  @SendTo("/topic/voyage.{voyageId}")
-  public List<PlaceReservationResponse> handleReservation(@DestinationVariable UUID voyageId,
-      PlaceReservationRequest request) {
-    // Vérifier si la place est libre (à protéger avec un verrou, ou côté service)
-    return reservationService.reservePlace(voyageId, request);
+    // Quand un client tente de réserver une place
+    @MessageMapping("/voyage/{voyageId}/reserver")
+    @SendTo("/topic/voyage.{voyageId}")
+    public List<PlaceReservationResponse> handleReservation(@DestinationVariable UUID voyageId,
+                                                            PlaceReservationRequest request) {
+        // Vérifier si la place est libre (à protéger avec un verrou, ou côté service)
+        return reservationService.reservePlace(voyageId, request);
 
-  }
+    }
 }

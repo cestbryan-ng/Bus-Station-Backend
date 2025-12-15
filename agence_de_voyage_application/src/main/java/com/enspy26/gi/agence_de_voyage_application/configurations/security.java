@@ -25,56 +25,56 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class security {
 
-  private JWtFilter jWtFilter;
-  private BCryptPasswordEncoder passwordEncoder;
+    private JWtFilter jWtFilter;
+    private BCryptPasswordEncoder passwordEncoder;
 
-  @Bean
-  public SecurityFilterChain filterChain(HttpSecurity https) throws Exception {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity https) throws Exception {
 
-    https.csrf(AbstractHttpConfigurer::disable)
-        .cors(Customizer.withDefaults())
-        .authorizeHttpRequests(
-            (auth) -> {
-              auth.requestMatchers("/utilisateur/inscription").permitAll()
-                  .requestMatchers("/utilisateur/connexion").permitAll()
-                  .requestMatchers("/utilisateur/profil/*").permitAll()
-                  .requestMatchers("/utilisateur/test").permitAll()
-                  // .requestMatchers("/voyage/**").permitAll()
-                  .requestMatchers("/voyage/all").permitAll()
-                  .requestMatchers("/voyage/byId/*").permitAll()
-                  .requestMatchers("/reservation/payer").permitAll()
-                  .requestMatchers("/swagger-ui/**").permitAll()
-                  .requestMatchers("/v3/api-docs/**").permitAll()
-                  .requestMatchers("/organizations/**").permitAll()
-                  .requestMatchers("/agence").permitAll()
-                  .requestMatchers("/notification/**").permitAll()
-                  .requestMatchers("/ws/**").permitAll()
-                  .anyRequest().authenticated();
-            })
-        .sessionManagement(httpSecuritySessionManagementConfiguger -> httpSecuritySessionManagementConfiguger
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .addFilterBefore(jWtFilter, UsernamePasswordAuthenticationFilter.class);
+        https.csrf(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults())
+                .authorizeHttpRequests(
+                        (auth) -> {
+                            auth.requestMatchers("/utilisateur/inscription").permitAll()
+                                    .requestMatchers("/utilisateur/connexion").permitAll()
+                                    .requestMatchers("/utilisateur/profil/*").permitAll()
+                                    .requestMatchers("/utilisateur/test").permitAll()
+                                    // .requestMatchers("/voyage/**").permitAll()
+                                    .requestMatchers("/voyage/all").permitAll()
+                                    .requestMatchers("/voyage/byId/*").permitAll()
+                                    .requestMatchers("/reservation/payer").permitAll()
+                                    .requestMatchers("/swagger-ui/**").permitAll()
+                                    .requestMatchers("/v3/api-docs/**").permitAll()
+                                    .requestMatchers("/organizations/**").permitAll()
+                                    .requestMatchers("/agence").permitAll()
+                                    .requestMatchers("/notification/**").permitAll()
+                                    .requestMatchers("/ws/**").permitAll()
+                                    .anyRequest().authenticated();
+                        })
+                .sessionManagement(httpSecuritySessionManagementConfiguger -> httpSecuritySessionManagementConfiguger
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jWtFilter, UsernamePasswordAuthenticationFilter.class);
 
-    return https.build();
-  }
+        return https.build();
+    }
 
-  // Pour l'authentification on fournit a Spring Security un Gestionnaire
-  // d'authentification, l'AuthenticationManager
-  @Bean
-  public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
-      throws Exception {
-    return authenticationConfiguration.getAuthenticationManager();
-  }
+    // Pour l'authentification on fournit a Spring Security un Gestionnaire
+    // d'authentification, l'AuthenticationManager
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
 
-  // Pour que le gestionnaire d'authentification fonctionne correctement on lui
-  // fournir un fournisseur d'authentification
-  @Bean
-  public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService) {
-    DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+    // Pour que le gestionnaire d'authentification fonctionne correctement on lui
+    // fournir un fournisseur d'authentification
+    @Bean
+    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService) {
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
 
-    daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-    daoAuthenticationProvider.setPasswordEncoder(this.passwordEncoder);
+        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
+        daoAuthenticationProvider.setPasswordEncoder(this.passwordEncoder);
 
-    return daoAuthenticationProvider;
-  }
+        return daoAuthenticationProvider;
+    }
 }

@@ -1,27 +1,22 @@
 package com.enspy26.gi.database_agence_voyage.repositories;
 
+import java.util.List;
 import java.util.UUID;
 
-import org.springframework.data.cassandra.repository.AllowFiltering;
-import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.enspy26.gi.database_agence_voyage.models.User;
 
-import java.util.List;
-
 @Repository
-public interface UserRepository extends CassandraRepository<User, UUID> {
+public interface UserRepository extends JpaRepository<User, UUID> {
 
-  @AllowFiltering
-  List<User> findByEmail(String email);
+    List<User> findByEmail(String email);
 
-  @AllowFiltering
-  List<User> findByUsername(String username);
+    List<User> findByUsername(String username);
 
-  @AllowFiltering
-  boolean existsByEmail(String email);
+    boolean existsByEmail(String email);
 
-  @AllowFiltering
-  boolean existsByTelNumber(String telNumber);
+    boolean existsByTelNumber(String telNumber);
+
 }

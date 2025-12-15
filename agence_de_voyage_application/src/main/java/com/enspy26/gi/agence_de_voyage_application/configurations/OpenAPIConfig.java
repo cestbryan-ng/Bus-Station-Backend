@@ -15,24 +15,24 @@ import io.swagger.v3.oas.models.servers.Server;
 @Configuration
 public class OpenAPIConfig {
 
-        @Bean
-        public OpenAPI customOpenAPI() {
-                return new OpenAPI()
-                                .info(new Info()
-                                                .title("BusStation API")
-                                                .version("1.0")
-                                                .contact(new Contact()
-                                                                .name("Tchassi Daniel")
-                                                                .email(("tchassidaniel@gmail.com")))
-                                                .description("API de Bus Station"))
-                                .components(new Components()
-                                                .addSecuritySchemes("bearerAuth",
-                                                                new SecurityScheme()
-                                                                                .type(SecurityScheme.Type.HTTP)
-                                                                                .scheme("bearer")
-                                                                                .bearerFormat("JWT")))
-                                .servers(Arrays.asList(
-                                                new Server().url(
-                                                                "https://agence-voyage.ddns.net/api")));
-        }
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("BusStation API")
+                        .version("1.0")
+                        .contact(new Contact()
+                                .name("Tchassi Daniel")
+                                .email(("tchassidaniel@gmail.com")))
+                        .description("API de Bus Station"))
+                .components(new Components()
+                        .addSecuritySchemes("bearerAuth",
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")))
+                .servers(Arrays.asList(
+                        new Server().url(
+                                "https://agence-voyage.ddns.net/api")));
+    }
 }

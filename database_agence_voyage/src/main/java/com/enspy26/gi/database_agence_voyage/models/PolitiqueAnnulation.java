@@ -4,8 +4,12 @@ import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.data.cassandra.core.mapping.PrimaryKey;
-import org.springframework.data.cassandra.core.mapping.Table;
+import jakarta.persistence.Convert;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
 
 import com.enspy26.gi.database_agence_voyage.utils.DurationConverter;
 
@@ -13,20 +17,24 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Convert;
-
-@Table
+@Entity
+@Table(name = "politiqueannulation")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class PolitiqueAnnulation {
-  @PrimaryKey
-  private UUID idPolitique;
 
-  private List<TauxPeriode> listeTauxPeriode;
+    @Id
+    private UUID idPolitique;
 
-  @Convert(converter = DurationConverter.class)
-  private Duration dureeCoupon;
+    @ElementCollection
+    @Column(name = "listetauxperiode")
+    private List<TauxPeriode> listeTauxPeriode;
 
-  private UUID idAgenceVoyage;
+    @Convert(converter = DurationConverter.class)
+    @Column(name = "dureecoupon")
+    private Duration dureeCoupon;
+
+    @Column(name = "idagencevoyage")
+    private UUID idAgenceVoyage;
 }

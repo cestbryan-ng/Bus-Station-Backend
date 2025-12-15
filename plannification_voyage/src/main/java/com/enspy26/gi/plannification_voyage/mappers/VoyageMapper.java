@@ -4,18 +4,42 @@ import com.enspy26.gi.database_agence_voyage.dto.Utilisateur.UserResponseDTO;
 import com.enspy26.gi.database_agence_voyage.dto.voyage.VoyageDTO;
 import com.enspy26.gi.database_agence_voyage.dto.voyage.VoyageDetailsDTO;
 import com.enspy26.gi.database_agence_voyage.dto.voyage.VoyagePreviewDTO;
+import com.enspy26.gi.database_agence_voyage.enums.Amenities;
 import com.enspy26.gi.database_agence_voyage.models.AgenceVoyage;
 import com.enspy26.gi.database_agence_voyage.models.ClassVoyage;
 import com.enspy26.gi.database_agence_voyage.models.User;
 import com.enspy26.gi.database_agence_voyage.models.Vehicule;
 import com.enspy26.gi.database_agence_voyage.models.Voyage;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
 @Component
 public class VoyageMapper {
+
+    // Méthode pour convertir String vers List<Amenities>
+    public static List<Amenities> stringToAmenitiesList(String amenitiesString) {
+        if (amenitiesString == null || amenitiesString.isEmpty()) {
+            return List.of();
+        }
+        return Arrays.stream(amenitiesString.split(","))
+                .map(String::trim)
+                .map(Amenities::valueOf)
+                .collect(Collectors.toList());
+    }
+
+    // Méthode pour convertir List<Amenities> vers String
+    public static String amenitiesListToString(List<Amenities> amenitiesList) {
+        if (amenitiesList == null || amenitiesList.isEmpty()) {
+            return "";
+        }
+        return amenitiesList.stream()
+                .map(Amenities::name)
+                .collect(Collectors.joining(","));
+    }
 
     public VoyageDTO toVoyageDTO(Voyage voyage) {
         VoyageDTO voyageDTO = new VoyageDTO();
@@ -35,10 +59,9 @@ public class VoyageMapper {
         voyageDTO.setBigImage(voyage.getBigImage());
 
         if (voyage.getAmenities() != null)
-            voyageDTO.setAmenities(voyage.getAmenities());
+            voyageDTO.setAmenities(stringToAmenitiesList(voyage.getAmenities()));
         else
             voyageDTO.setAmenities(List.of());
-
         return voyageDTO;
     }
 
@@ -60,7 +83,7 @@ public class VoyageMapper {
         voyagePreviewDTO.setDateDepartPrev(voyage.getDateDepartPrev());
         voyagePreviewDTO.setStatusVoyage(voyage.getStatusVoyage());
         if (voyage.getAmenities() != null)
-            voyagePreviewDTO.setAmenities(voyage.getAmenities());
+            voyagePreviewDTO.setAmenities(stringToAmenitiesList(voyage.getAmenities()));
         else
             voyagePreviewDTO.setAmenities(List.of()); // Set to empty list if amenities are null
         return voyagePreviewDTO;
@@ -99,7 +122,7 @@ public class VoyageMapper {
         voyageDetailsDTO.setPlaceReservees(placesReservees);
         voyageDetailsDTO.setChauffeur(UserResponseDTO.fromUser(chauffeur));
         if (voyage.getAmenities() != null)
-            voyageDetailsDTO.setAmenities(voyage.getAmenities());
+            voyageDetailsDTO.setAmenities(stringToAmenitiesList(voyage.getAmenities()));
         else
             voyageDetailsDTO.setAmenities(List.of());
         return voyageDetailsDTO;

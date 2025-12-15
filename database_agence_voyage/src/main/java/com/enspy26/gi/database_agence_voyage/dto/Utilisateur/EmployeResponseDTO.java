@@ -11,7 +11,6 @@ import java.util.UUID;
 
 import com.enspy26.gi.database_agence_voyage.enums.StatutEmploye;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
