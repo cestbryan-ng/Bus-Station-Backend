@@ -22,8 +22,7 @@ public class OpenAPIConfig {
                         .title("BusStation API")
                         .version("1.0")
                         .contact(new Contact()
-                                .name("Tchassi Daniel")
-                                .email(("tchassidaniel@gmail.com")))
+                                .name("4GI 2027"))
                         .description("API de Bus Station"))
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth",
@@ -33,6 +32,6 @@ public class OpenAPIConfig {
                                         .bearerFormat("JWT")))
                 .servers(Arrays.asList(
                         new Server().url(
-                                "https://agence-voyage.ddns.net/api")));
+                                "http://localhost:8081/api")));
     }
 }
