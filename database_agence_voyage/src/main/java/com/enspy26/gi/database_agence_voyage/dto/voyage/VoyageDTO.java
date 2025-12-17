@@ -22,6 +22,8 @@ public class VoyageDTO {
     private Date dateDepartPrev;
     private String lieuDepart;
     private String lieuArrive;
+    private String zoneArrive;
+    private String zoneDepart;
     private Date heureDepartEffectif;
     private Duration dureeVoyage;
     private Date heureArrive;

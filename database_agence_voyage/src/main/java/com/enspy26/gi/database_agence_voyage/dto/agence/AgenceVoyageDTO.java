@@ -33,6 +33,9 @@ public class AgenceVoyageDTO {
   @Size(max = 200, message = "L'emplacement ne peut pas dépasser 200 caractères")
   private String location;
 
+    @Size(max = 200, message = "L'emplacement ne peut pas dépasser 200 caractères")
+    private String ville;
+
   @Size(max = 100, message = "Le lien du réseau social ne peut pas dépasser 100 caractères")
   private String social_network;
 

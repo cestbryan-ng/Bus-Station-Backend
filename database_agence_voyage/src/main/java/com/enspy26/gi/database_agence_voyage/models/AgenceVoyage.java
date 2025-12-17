@@ -47,4 +47,7 @@ public class AgenceVoyage {
 
     @Column(name = "greetingmessage")
     private String greetingMessage;
+
+    @Column(name = "ville")
+    private String ville;
 }
