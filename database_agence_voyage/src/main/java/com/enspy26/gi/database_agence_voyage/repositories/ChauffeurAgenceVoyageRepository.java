@@ -14,5 +14,7 @@ public interface ChauffeurAgenceVoyageRepository extends JpaRepository<Chauffeur
 
     List<ChauffeurAgenceVoyage> findByAgenceVoyageId(UUID agenceVoyageId);
 
+    int countByAgenceVoyageId(UUID agence_voyage_id);
+
     Optional<ChauffeurAgenceVoyage> findByUserId(UUID userId);
 }

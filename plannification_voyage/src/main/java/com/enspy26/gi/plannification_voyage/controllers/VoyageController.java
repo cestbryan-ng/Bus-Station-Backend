@@ -14,10 +14,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.UUID;
 
 @RestController
@@ -114,6 +116,55 @@ public class VoyageController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Erreur lors de la récupération des voyages de l'agence");
+        }
+    }
+
+    @Operation(
+            summary = "Rechercher des voyages",
+            description = "Recherche des voyages par ville de départ/arrivée (obligatoire) " +
+                    "et optionnellement par zone et date. " +
+                    "- ville_depart/ville_arrive : Ville (ex: 'Yaoundé', 'Douala') " +
+                    "- zone_depart/zone_arrive : Zone dans la ville (ex: 'Mvan', 'Akwa') " +
+                    "- date_depart : Date au format 'yyyy-MM-dd'"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Liste des voyages correspondant aux critères",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = VoyagePreviewDTO.class))
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Paramètres de recherche invalides"
+            )
+    })
+    @GetMapping("/search")
+    public ResponseEntity<?> searchVoyages(
+            @RequestParam(name = "ville_depart") String villeDepart,
+            @RequestParam(name = "ville_arrive") String villeArrive,
+            @RequestParam(name = "zone_depart", required = false) String zoneDepart,
+            @RequestParam(name = "zone_arrive", required = false) String zoneArrive,
+            @RequestParam(name = "date_depart", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateDepart,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size
+    ) {
+        try {
+            Page<VoyagePreviewDTO> voyages = voyageService.searchVoyages(
+                    villeDepart,
+                    villeArrive,
+                    zoneDepart,
+                    zoneArrive,
+                    dateDepart,
+                    page,
+                    size
+            );
+            return ResponseEntity.ok(voyages);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de la recherche des voyages: " + e.getMessage());
         }
     }
 }

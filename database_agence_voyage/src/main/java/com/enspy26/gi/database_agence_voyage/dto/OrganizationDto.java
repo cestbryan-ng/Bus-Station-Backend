@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import com.enspy26.gi.database_agence_voyage.models.Organization;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -82,4 +83,42 @@ public class OrganizationDto {
   private List<String> keywords;
 
   private String status;
+
+    /**
+     * Factory method to create DTO from Organization entity
+     *
+     * @param organization Organization entity
+     * @return OrganizationDto with organization information
+     */
+    public static OrganizationDto fromEntity(Organization organization) {
+        OrganizationDto dto = new OrganizationDto();
+
+        dto.setCreatedAt(organization.getCreatedAt());
+        dto.setUpdatedAt(organization.getUpdatedAt());
+        dto.setDeletedAt(organization.getDeletedAt());
+        dto.setCreatedBy(organization.getCreatedBy());
+        dto.setUpdatedBy(organization.getUpdatedBy());
+        dto.setOrganizationId(organization.getOrganizationId());
+        dto.setBusinessDomains(organization.getBusinessDomains());
+        dto.setEmail(organization.getEmail());
+        dto.setShortName(organization.getShortName());
+        dto.setLongName(organization.getLongName());
+        dto.setDescription(organization.getDescription());
+        dto.setLogoUrl(organization.getLogoUrl());
+        dto.setIndividualBusiness(organization.isIndividualBusiness());
+        dto.setLegalForm(organization.getLegalForm());
+        dto.setActive(organization.isActive());
+        dto.setWebsiteUrl(organization.getWebsiteUrl());
+        dto.setSocialNetwork(organization.getSocialNetwork());
+        dto.setBusinessRegistrationNumber(organization.getBusinessRegistrationNumber());
+        dto.setTaxNumber(organization.getTaxNumber());
+        dto.setCapitalShare(organization.getCapitalShare());
+        dto.setRegistrationDate(organization.getRegistrationDate());
+        dto.setCeoName(organization.getCeoName());
+        dto.setYearFounded(organization.getYearFounded());
+        dto.setKeywords(organization.getKeywords());
+        dto.setStatus(organization.getStatus());
+
+        return dto;
+    }
 }

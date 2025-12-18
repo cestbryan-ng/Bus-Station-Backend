@@ -82,11 +82,16 @@ public class User implements UserDetails {
             this.role = "";
             return;
         }
+
+        // Determine business actor type based on roles
         if (roles.contains(RoleType.AGENCE_VOYAGE) || roles.contains(RoleType.ORGANISATION)) {
             this.businessActorType = BusinessActorType.PROVIDER;
+        } else if (roles.contains(RoleType.BSM)) {
+            this.businessActorType = BusinessActorType.REGULATOR;
         } else {
             this.businessActorType = BusinessActorType.CONSUMER;
         }
+
         this.role = roles.stream()
                 .map(RoleType::name)
                 .collect(Collectors.joining(","));

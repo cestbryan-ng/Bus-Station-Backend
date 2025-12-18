@@ -4,5 +4,6 @@ public enum RoleType {
   USAGER,
   EMPLOYE,
   AGENCE_VOYAGE,
-  ORGANISATION
+  ORGANISATION,
+  BSM
 }

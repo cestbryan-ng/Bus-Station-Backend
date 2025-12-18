@@ -17,6 +17,7 @@ public interface EmployeAgenceVoyageRepository extends JpaRepository<EmployeAgen
      */
     List<EmployeAgenceVoyage> findByAgenceVoyageId(UUID agenceVoyageId);
 
+    int countByAgenceVoyageId(UUID agence_voyage_id);
     /**
      * Trouve tous les employés d'une agence avec un statut donné
      */

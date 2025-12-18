@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import com.enspy26.gi.database_agence_voyage.dto.Utilisateur.*;
 import com.enspy26.gi.database_agence_voyage.enums.StatutEmploye;
+import com.enspy26.gi.database_agence_voyage.enums.StatutValidation;
 import com.enspy26.gi.database_agence_voyage.models.EmployeAgenceVoyage;
 import com.enspy26.gi.database_agence_voyage.repositories.EmployeAgenceVoyageRepository;
 import com.enspy26.gi.notification.factory.NotificationFactory;
@@ -123,81 +124,103 @@ public class UserService implements UserDetailsService {
     return userDetails;
   }
 
-  public AgenceVoyage createAgenceVoyage(AgenceVoyageDTO agenceDTO) {
-    // Verify that user exists
-    User user = userRepository.findById(agenceDTO.getUser_id())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-            "User with id " + agenceDTO.getUser_id() + " does not exist"));
+    public AgenceVoyage createAgenceVoyage(AgenceVoyageDTO agenceDTO) {
+        User user = userRepository.findById(agenceDTO.getUser_id())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User with ID " + agenceDTO.getUser_id() + " not found"
+                ));
 
-    boolean isLongNameUsed = agenceVoyageRepository.existsByLongName(agenceDTO.getLong_name());
-    boolean isShortNameUsed = agenceVoyageRepository.existsByShortName(agenceDTO.getShort_name());
-    if (isShortNameUsed || isLongNameUsed) {
-      HashMap<String, String> errors = new HashMap<>();
-      if (isLongNameUsed) {
-        errors.put("long_name", "An agency with long name " + agenceDTO.getLong_name() + " already exists");
-      }
-      if (isShortNameUsed) {
-        errors.put("short_name", "An agency with short name " + agenceDTO.getShort_name() + " already exists");
-      }
-      throw new RegistrationException(HttpStatus.CONFLICT, errors);
+        // Check for duplicate agency names
+        boolean is_long_name_used = agenceVoyageRepository.existsByLongName(agenceDTO.getLong_name());
+        boolean is_short_name_used = agenceVoyageRepository.existsByShortName(agenceDTO.getShort_name());
+
+        if (is_short_name_used || is_long_name_used) {
+            HashMap<String, String> errors = new HashMap<>();
+            if (is_long_name_used) {
+                errors.put("long_name", "An agency with long name " + agenceDTO.getLong_name() + " already exists");
+            }
+            if (is_short_name_used) {
+                errors.put("short_name", "An agency with short name " + agenceDTO.getShort_name() + " already exists");
+            }
+            throw new RegistrationException(HttpStatus.CONFLICT, errors);
+        }
+
+        // Create new agency entity
+        AgenceVoyage agence = new AgenceVoyage();
+        agence.setAgencyId(UUID.randomUUID());
+        agence.setOrganisationId(agenceDTO.getOrganisation_id());
+        agence.setUserId(agenceDTO.getUser_id());
+        agence.setLongName(agenceDTO.getLong_name());
+        agence.setShortName(agenceDTO.getShort_name());
+        agence.setLocation(agenceDTO.getLocation());
+        agence.setVille(agenceDTO.getVille());
+        agence.setStatutValidation(StatutValidation.EN_ATTENTE);
+        agence.setSocialNetwork(agenceDTO.getSocial_network());
+        agence.setDescription(agenceDTO.getDescription());
+        agence.setGreetingMessage(agenceDTO.getGreeting_message());
+
+        // Update user roles if needed
+        if (!user.getRole().contains(RoleType.AGENCE_VOYAGE)) {
+            List<RoleType> updated_roles = new ArrayList<>(user.getRole());
+            updated_roles.add(RoleType.AGENCE_VOYAGE);
+            updated_roles.add(RoleType.ORGANISATION);
+            user.setRole(updated_roles);
+            userRepository.save(user);
+        }
+
+        // Send agency creation notification
+        try {
+            notificationService.sendNotification(
+                    NotificationFactory.createAgencyCreatedEvent(agence, user)
+            );
+        } catch (Exception e) {
+            log.warn("Error sending agency creation notification: {}", e.getMessage());
+        }
+
+        return agenceVoyageRepository.save(agence);
     }
 
-    AgenceVoyage agence = new AgenceVoyage();
-    agence.setAgencyId(UUID.randomUUID());
-    agence.setOrganisationId(agenceDTO.getOrganisation_id());
-    agence.setUserId(agenceDTO.getUser_id());
-    agence.setLongName(agenceDTO.getLong_name());
-    agence.setShortName(agenceDTO.getShort_name());
-    agence.setLocation(agenceDTO.getLocation());
-    agence.setSocialNetwork(agenceDTO.getSocial_network());
-    agence.setDescription(agenceDTO.getDescription());
-    agence.setGreetingMessage(agenceDTO.getGreeting_message());
+    public AgenceVoyage updateAgenceVoyage(UUID agency_id, AgenceVoyageDTO agenceDTO) {
+        AgenceVoyage agence = agenceVoyageRepository.findById(agency_id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Agency not found"
+                ));
 
-    if (!user.getRole().contains(RoleType.AGENCE_VOYAGE)) {
-      List<RoleType> updatedRoles = new ArrayList<>(user.getRole());
-      updatedRoles.add(RoleType.AGENCE_VOYAGE);
-      updatedRoles.add(RoleType.ORGANISATION); // Ensure the user has ORGANISATION role as well
-      user.setRole(updatedRoles);
-      userRepository.save(user);
+        // Check long name uniqueness (exclude current agency)
+        List<AgenceVoyage> agencies_with_long_name = agenceVoyageRepository.findByLongName(agenceDTO.getLong_name());
+        if (!agencies_with_long_name.isEmpty() &&
+                !agencies_with_long_name.get(0).getAgencyId().equals(agency_id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "An agency with long name " + agenceDTO.getLong_name() + " already exists"
+            );
+        }
+
+        // Check short name uniqueness (exclude current agency)
+        List<AgenceVoyage> agencies_with_short_name = agenceVoyageRepository.findByShortName(agenceDTO.getShort_name());
+        if (!agencies_with_short_name.isEmpty() &&
+                !agencies_with_short_name.get(0).getAgencyId().equals(agency_id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "An agency with short name " + agenceDTO.getShort_name() + " already exists"
+            );
+        }
+
+        // Update agency fields
+        agence.setOrganisationId(agenceDTO.getOrganisation_id());
+        agence.setUserId(agenceDTO.getUser_id());
+        agence.setLongName(agenceDTO.getLong_name());
+        agence.setShortName(agenceDTO.getShort_name());
+        agence.setLocation(agenceDTO.getLocation());
+        agence.setVille(agenceDTO.getVille()); // ✅ FIX: Add ville field
+        agence.setSocialNetwork(agenceDTO.getSocial_network());
+        agence.setDescription(agenceDTO.getDescription());
+        agence.setGreetingMessage(agenceDTO.getGreeting_message());
+
+        return agenceVoyageRepository.save(agence);
     }
-
-    // Envoyer notification de création d'agence
-    try {
-      notificationService.sendNotification(
-          NotificationFactory.createAgencyCreatedEvent(agence, user));
-    } catch (Exception e) {
-      log.warn("Erreur lors de l'envoi de la notification de création d'agence: {}", e.getMessage());
-    }
-
-    return agenceVoyageRepository.save(agence);
-  }
-
-  public AgenceVoyage updateAgenceVoyage(UUID agencyId, AgenceVoyageDTO agenceDTO) {
-    AgenceVoyage agence = agenceVoyageRepository.findById(agencyId)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Agency not found"));
-
-    // Check name uniqueness but exclude current agency
-    List<AgenceVoyage> agencesWithLongName = agenceVoyageRepository.findByLongName(agenceDTO.getLong_name());
-    if (!agencesWithLongName.isEmpty() && !agencesWithLongName.get(0).getAgencyId().equals(agencyId)) {
-      throw new RuntimeException("An agency with long name " + agenceDTO.getLong_name() + " already exists");
-    }
-
-    List<AgenceVoyage> agencesWithShortName = agenceVoyageRepository.findByShortName(agenceDTO.getShort_name());
-    if (!agencesWithShortName.isEmpty() && !agencesWithShortName.get(0).getAgencyId().equals(agencyId)) {
-      throw new RuntimeException("An agency with short name " + agenceDTO.getShort_name() + " already exists");
-    }
-
-    agence.setOrganisationId(agenceDTO.getOrganisation_id());
-    agence.setUserId(agenceDTO.getUser_id());
-    agence.setLongName(agenceDTO.getLong_name());
-    agence.setShortName(agenceDTO.getShort_name());
-    agence.setLocation(agenceDTO.getLocation());
-    agence.setSocialNetwork(agenceDTO.getSocial_network());
-    agence.setDescription(agenceDTO.getDescription());
-    agence.setGreetingMessage(agenceDTO.getGreeting_message());
-
-    return agenceVoyageRepository.save(agence);
-  }
 
   public void deleteAgenceVoyage(UUID agencyId) {
     if (!agenceVoyageRepository.existsById(agencyId)) {

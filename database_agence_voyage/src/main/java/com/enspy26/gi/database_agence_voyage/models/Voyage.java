@@ -55,12 +55,6 @@ public class Voyage {
     @Column(name = "lieuarrive", nullable = true)
     private String lieuArrive;
 
-    @Column(name = "zonearrive", nullable = true)
-    private String zoneArrive;
-
-    @Column(name = "zonedepart", nullable = true)
-    private String zoneDepart;
-
     @Column(name = "heuredeparteffectif", nullable = true)
     private Date heureDepartEffectif;
 

@@ -28,12 +28,6 @@ public class VoyageCreateRequestDTO {
   @NotNull(message = "Le lieu d'arrivée est obligatoire")
   private String lieuArrive;
 
-    @NotNull(message = "Le lieu d'arrivée est obligatoire")
-    private String zoneArrive;
-
-    @NotNull(message = "Le lieu d'arrivée est obligatoire")
-    private String zoneDepart;
-
   @NotNull(message = "L'heure d'arrivée est obligatoire")
   private Date heureArrive;
 

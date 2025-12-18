@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict Qn54ZJpm2ifhraKSB4z4FshWedJFEXQiCdpaC0wdlsblQdYpDMuy52F2NTF0OWw
+\restrict P7v7Sl8NFYSl51CdfCLuZbsBuFAkkdhfAiiIFPG3Qlh2lK4vU4DinQR8iDSVbgu
 
 -- Dumped from database version 18.1
 -- Dumped by pg_dump version 18.1
 
--- Started on 2025-12-15 18:01:33
+-- Started on 2025-12-18 10:32:52
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -20,6 +20,40 @@ SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
+
+--
+-- TOC entry 5 (class 2615 OID 2200)
+-- Name: public; Type: SCHEMA; Schema: -; Owner: pg_database_owner
+--
+
+CREATE SCHEMA public;
+
+
+ALTER SCHEMA public OWNER TO pg_database_owner;
+
+--
+-- TOC entry 5198 (class 0 OID 0)
+-- Dependencies: 5
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: pg_database_owner
+--
+
+COMMENT ON SCHEMA public IS 'standard public schema';
+
+
+--
+-- TOC entry 912 (class 1247 OID 16429)
+-- Name: tauxperiode; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.tauxperiode AS (
+	datedebut timestamp without time zone,
+	datefin timestamp without time zone,
+	taux double precision,
+	compensation double precision
+);
+
+
+ALTER TYPE public.tauxperiode OWNER TO postgres;
 
 SET default_tablespace = '';
 
@@ -39,11 +73,52 @@ CREATE TABLE public.agencevoyage (
     location character varying(255),
     socialnetwork character varying(255),
     description character varying(255),
-    greetingmessage character varying(255)
+    greetingmessage character varying(255),
+    ville character varying(255),
+    statut_validation character varying(50) DEFAULT 'EN_ATTENTE'::character varying,
+    bsm_validator_id uuid,
+    date_validation timestamp without time zone,
+    motif_rejet text
 );
 
 
 ALTER TABLE public.agencevoyage OWNER TO postgres;
+
+--
+-- TOC entry 5199 (class 0 OID 0)
+-- Dependencies: 235
+-- Name: COLUMN agencevoyage.statut_validation; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.agencevoyage.statut_validation IS 'Validation status: EN_ATTENTE, VALIDEE, REJETEE, SUSPENDUE';
+
+
+--
+-- TOC entry 5200 (class 0 OID 0)
+-- Dependencies: 235
+-- Name: COLUMN agencevoyage.bsm_validator_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.agencevoyage.bsm_validator_id IS 'BSM who validated or rejected the agency';
+
+
+--
+-- TOC entry 5201 (class 0 OID 0)
+-- Dependencies: 235
+-- Name: COLUMN agencevoyage.date_validation; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.agencevoyage.date_validation IS 'Date of validation or rejection by BSM';
+
+
+--
+-- TOC entry 5202 (class 0 OID 0)
+-- Dependencies: 235
+-- Name: COLUMN agencevoyage.motif_rejet; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.agencevoyage.motif_rejet IS 'Rejection reason if agency was rejected';
+
 
 --
 -- TOC entry 232 (class 1259 OID 16527)
@@ -61,8 +136,8 @@ CREATE TABLE public.app_user (
     address character varying(255),
     idcoordonneegps uuid,
     username character varying(255),
-    genre text,
-    businessactortype text
+    genre smallint,
+    businessactortype smallint
 );
 
 
@@ -234,7 +309,6 @@ CREATE TABLE public.organization (
     deletedat timestamp without time zone,
     createdby uuid,
     updatedby uuid,
-    organizationid uuid,
     businessdomains uuid[],
     email character varying(255),
     shortname character varying(255),
@@ -253,7 +327,9 @@ CREATE TABLE public.organization (
     ceoname character varying(255),
     yearfounded timestamp without time zone,
     keywords text[],
-    status character varying(255)
+    status character varying(255),
+    organizationid uuid,
+    agenceid uuid
 );
 
 
@@ -329,7 +405,7 @@ ALTER TABLE public.politique_annulation_liste_taux_periode OWNER TO postgres;
 CREATE TABLE public.politiqueannulation (
     idpolitique uuid DEFAULT gen_random_uuid() NOT NULL,
     listetauxperiode public.tauxperiode[],
-    dureecoupon text,
+    dureecoupon bigint,
     idagencevoyage uuid,
     id_politique uuid NOT NULL
 );
@@ -440,7 +516,7 @@ CREATE TABLE public.voyage (
     heuredeparteffectif timestamp without time zone,
     pointdedepart character varying(255),
     pointarrivee character varying(255),
-    dureevoyage text,
+    dureevoyage bigint,
     heurearrive timestamp without time zone,
     nbrplacereservable integer,
     nbrplacereserve integer,
@@ -459,7 +535,7 @@ CREATE TABLE public.voyage (
 ALTER TABLE public.voyage OWNER TO postgres;
 
 --
--- TOC entry 5007 (class 2606 OID 16562)
+-- TOC entry 5031 (class 2606 OID 16562)
 -- Name: agencevoyage agencevoyage_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -468,7 +544,7 @@ ALTER TABLE ONLY public.agencevoyage
 
 
 --
--- TOC entry 5001 (class 2606 OID 16535)
+-- TOC entry 5025 (class 2606 OID 16535)
 -- Name: app_user app_user_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -477,7 +553,7 @@ ALTER TABLE ONLY public.app_user
 
 
 --
--- TOC entry 4979 (class 2606 OID 16438)
+-- TOC entry 5003 (class 2606 OID 16438)
 -- Name: baggage baggage_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -486,7 +562,7 @@ ALTER TABLE ONLY public.baggage
 
 
 --
--- TOC entry 5011 (class 2606 OID 16580)
+-- TOC entry 5037 (class 2606 OID 16580)
 -- Name: chauffeuragencevoyage chauffeuragencevoyage_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -495,7 +571,7 @@ ALTER TABLE ONLY public.chauffeuragencevoyage
 
 
 --
--- TOC entry 4981 (class 2606 OID 16447)
+-- TOC entry 5005 (class 2606 OID 16447)
 -- Name: classvoyage classvoyage_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -504,7 +580,7 @@ ALTER TABLE ONLY public.classvoyage
 
 
 --
--- TOC entry 4983 (class 2606 OID 16456)
+-- TOC entry 5007 (class 2606 OID 16456)
 -- Name: coordonnee coordonnee_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -513,7 +589,7 @@ ALTER TABLE ONLY public.coordonnee
 
 
 --
--- TOC entry 4985 (class 2606 OID 16465)
+-- TOC entry 5009 (class 2606 OID 16465)
 -- Name: coupon coupon_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -522,7 +598,7 @@ ALTER TABLE ONLY public.coupon
 
 
 --
--- TOC entry 5013 (class 2606 OID 16589)
+-- TOC entry 5039 (class 2606 OID 16589)
 -- Name: employeagencevoyage employeagencevoyage_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -531,7 +607,7 @@ ALTER TABLE ONLY public.employeagencevoyage
 
 
 --
--- TOC entry 4987 (class 2606 OID 16474)
+-- TOC entry 5011 (class 2606 OID 16474)
 -- Name: historique historique_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -540,7 +616,7 @@ ALTER TABLE ONLY public.historique
 
 
 --
--- TOC entry 5015 (class 2606 OID 16755)
+-- TOC entry 5041 (class 2606 OID 16755)
 -- Name: ligne_voyage ligne_voyage_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -549,7 +625,7 @@ ALTER TABLE ONLY public.ligne_voyage
 
 
 --
--- TOC entry 4989 (class 2606 OID 16481)
+-- TOC entry 5013 (class 2606 OID 16481)
 -- Name: lignevoyage lignevoyage_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -558,7 +634,7 @@ ALTER TABLE ONLY public.lignevoyage
 
 
 --
--- TOC entry 5009 (class 2606 OID 16571)
+-- TOC entry 5035 (class 2606 OID 16571)
 -- Name: organization organization_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -567,7 +643,7 @@ ALTER TABLE ONLY public.organization
 
 
 --
--- TOC entry 4991 (class 2606 OID 16490)
+-- TOC entry 5015 (class 2606 OID 16490)
 -- Name: passager passager_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -576,7 +652,7 @@ ALTER TABLE ONLY public.passager
 
 
 --
--- TOC entry 4993 (class 2606 OID 16499)
+-- TOC entry 5017 (class 2606 OID 16499)
 -- Name: politiqueannulation politiqueannulation_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -585,7 +661,7 @@ ALTER TABLE ONLY public.politiqueannulation
 
 
 --
--- TOC entry 4995 (class 2606 OID 16508)
+-- TOC entry 5019 (class 2606 OID 16508)
 -- Name: reservation reservation_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -594,7 +670,7 @@ ALTER TABLE ONLY public.reservation
 
 
 --
--- TOC entry 4997 (class 2606 OID 16517)
+-- TOC entry 5021 (class 2606 OID 16517)
 -- Name: role role_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -603,7 +679,7 @@ ALTER TABLE ONLY public.role
 
 
 --
--- TOC entry 4999 (class 2606 OID 16526)
+-- TOC entry 5023 (class 2606 OID 16526)
 -- Name: soldeindemnisation soldeindemnisation_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -612,7 +688,7 @@ ALTER TABLE ONLY public.soldeindemnisation
 
 
 --
--- TOC entry 5003 (class 2606 OID 16544)
+-- TOC entry 5027 (class 2606 OID 16544)
 -- Name: vehicule vehicule_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -621,7 +697,7 @@ ALTER TABLE ONLY public.vehicule
 
 
 --
--- TOC entry 5005 (class 2606 OID 16553)
+-- TOC entry 5029 (class 2606 OID 16553)
 -- Name: voyage voyage_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -630,7 +706,23 @@ ALTER TABLE ONLY public.voyage
 
 
 --
--- TOC entry 5018 (class 2606 OID 16974)
+-- TOC entry 5032 (class 1259 OID 17010)
+-- Name: idx_agence_statut_validation; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_agence_statut_validation ON public.agencevoyage USING btree (statut_validation);
+
+
+--
+-- TOC entry 5033 (class 1259 OID 17011)
+-- Name: idx_agence_ville_statut; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_agence_ville_statut ON public.agencevoyage USING btree (ville, statut_validation);
+
+
+--
+-- TOC entry 5045 (class 2606 OID 16974)
 -- Name: politique_annulation_liste_taux_periode fk33y1kxnvx5ged3sidllv2jdv4; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -639,7 +731,16 @@ ALTER TABLE ONLY public.politique_annulation_liste_taux_periode
 
 
 --
--- TOC entry 5017 (class 2606 OID 16969)
+-- TOC entry 5042 (class 2606 OID 17005)
+-- Name: agencevoyage fk_agence_bsm_validator; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.agencevoyage
+    ADD CONSTRAINT fk_agence_bsm_validator FOREIGN KEY (bsm_validator_id) REFERENCES public.app_user(userid);
+
+
+--
+-- TOC entry 5044 (class 2606 OID 16969)
 -- Name: organization_keywords fkq29f42todjfucy9lo14ax3v0y; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -648,7 +749,7 @@ ALTER TABLE ONLY public.organization_keywords
 
 
 --
--- TOC entry 5016 (class 2606 OID 16964)
+-- TOC entry 5043 (class 2606 OID 16964)
 -- Name: organization_business_domains fksgeo5qecw4ekjhwff0t5ew3ko; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -656,11 +757,11 @@ ALTER TABLE ONLY public.organization_business_domains
     ADD CONSTRAINT fksgeo5qecw4ekjhwff0t5ew3ko FOREIGN KEY (organization_id) REFERENCES public.organization(id);
 
 
--- Completed on 2025-12-15 18:01:33
+-- Completed on 2025-12-18 10:32:52
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict Qn54ZJpm2ifhraKSB4z4FshWedJFEXQiCdpaC0wdlsblQdYpDMuy52F2NTF0OWw
+\unrestrict P7v7Sl8NFYSl51CdfCLuZbsBuFAkkdhfAiiIFPG3Qlh2lK4vU4DinQR8iDSVbgu
 

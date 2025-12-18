@@ -8,14 +8,26 @@ import java.util.stream.Collectors;
 import com.enspy26.gi.database_agence_voyage.models.AgenceVoyage;
 import com.enspy26.gi.database_agence_voyage.repositories.AgenceVoyageRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.enspy26.gi.database_agence_voyage.dto.CreateOrganizationRequest;
 import com.enspy26.gi.database_agence_voyage.dto.OrganizationDto;
+import com.enspy26.gi.database_agence_voyage.dto.organization.OrganizationDetailsDTO;
+import com.enspy26.gi.database_agence_voyage.dto.organization.UpdateOrganizationRequest;
 import com.enspy26.gi.database_agence_voyage.models.Organization;
 import com.enspy26.gi.database_agence_voyage.repositories.OrganizationRepository;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Service class for organization management operations
+ * Handles business logic for organizations
+ *
+ * @author Thomas Djotio Ndié
+ * @version 1.0
+ * @since 2025-12-17
+ */
 @Service
 @RequiredArgsConstructor
 public class OrganizationService {
@@ -23,10 +35,39 @@ public class OrganizationService {
     private final OrganizationRepository organizationRepository;
     private final AgenceVoyageRepository agenceVoyageRepository;
 
-    public List<AgenceVoyage> findAllAgencies(UUID organizationId) {
-        return agenceVoyageRepository.findByOrganisationId(organizationId);
+    /**
+     * Retrieves all agencies belonging to a specific organization
+     *
+     * @param organization_id UUID of the organization
+     * @return List of AgenceVoyage entities
+     */
+    public List<AgenceVoyage> findAllAgencies(UUID organization_id) {
+        return agenceVoyageRepository.findByOrganisationId(organization_id);
     }
 
+    /**
+     * Retrieves detailed information about a specific organization
+     *
+     * @param organization_id UUID of the organization to retrieve
+     * @return OrganizationDetailsDTO containing complete organization information
+     * @throws ResponseStatusException if organization not found (404)
+     */
+    public OrganizationDetailsDTO getOrganizationById(UUID organization_id) {
+        Organization organization = organizationRepository.findById(organization_id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Organization with ID " + organization_id + " not found"
+                ));
+
+        return OrganizationDetailsDTO.fromEntity(organization);
+    }
+
+    /**
+     * Creates a new organization in the system
+     *
+     * @param request CreateOrganizationRequest containing organization data
+     * @return OrganizationDto of the created organization
+     */
     public OrganizationDto createOrganization(CreateOrganizationRequest request) {
         Organization organization = new Organization();
 
@@ -41,64 +82,155 @@ public class OrganizationService {
         organization.setShortName(request.getShortName());
         organization.setEmail(request.getEmail());
         organization.setDescription(request.getDescription());
-        organization.setBusinessDomains(request.getBusinessDomains());
         organization.setLogoUrl(request.getLogoUrl());
-        organization.setLegalForm(request.getLegalForm());
         organization.setWebsiteUrl(request.getWebsiteUrl());
         organization.setSocialNetwork(request.getSocialNetwork());
+        organization.setLegalForm(request.getLegalForm());
         organization.setBusinessRegistrationNumber(request.getBusinessRegistrationNumber());
         organization.setTaxNumber(request.getTaxNumber());
         organization.setCapitalShare(request.getCapitalShare());
         organization.setRegistrationDate(request.getRegistrationDate());
         organization.setCeoName(request.getCeoName());
         organization.setYearFounded(request.getYearFounded());
+        organization.setBusinessDomains(request.getBusinessDomains());
         organization.setKeywords(request.getKeywords());
 
         // Set default values
+        organization.setIndividualBusiness(false);
         organization.setActive(true);
         organization.setStatus("ACTIVE");
-        organization.setIndividualBusiness(false);
 
-        Organization savedOrganization = organizationRepository.save(organization);
-        return convertToDto(savedOrganization);
+        Organization saved_organization = organizationRepository.save(organization);
+        return OrganizationDto.fromEntity(saved_organization);
     }
 
-    private OrganizationDto convertToDto(Organization organization) {
-        OrganizationDto dto = new OrganizationDto();
-
-        dto.setCreatedAt(organization.getCreatedAt());
-        dto.setUpdatedAt(organization.getUpdatedAt());
-        dto.setDeletedAt(organization.getDeletedAt());
-        dto.setCreatedBy(organization.getCreatedBy());
-        dto.setUpdatedBy(organization.getUpdatedBy());
-        dto.setOrganizationId(organization.getOrganizationId());
-        dto.setBusinessDomains(organization.getBusinessDomains());
-        dto.setEmail(organization.getEmail());
-        dto.setShortName(organization.getShortName());
-        dto.setLongName(organization.getLongName());
-        dto.setDescription(organization.getDescription());
-        dto.setLogoUrl(organization.getLogoUrl());
-        dto.setIndividualBusiness(organization.isIndividualBusiness());
-        dto.setLegalForm(organization.getLegalForm());
-        dto.setActive(organization.isActive());
-        dto.setWebsiteUrl(organization.getWebsiteUrl());
-        dto.setSocialNetwork(organization.getSocialNetwork());
-        dto.setBusinessRegistrationNumber(organization.getBusinessRegistrationNumber());
-        dto.setTaxNumber(organization.getTaxNumber());
-        dto.setCapitalShare(organization.getCapitalShare());
-        dto.setRegistrationDate(organization.getRegistrationDate());
-        dto.setCeoName(organization.getCeoName());
-        dto.setYearFounded(organization.getYearFounded());
-        dto.setKeywords(organization.getKeywords());
-        dto.setStatus(organization.getStatus());
-
-        return dto;
-    }
-
+    /**
+     * Retrieves all organizations in the system
+     *
+     * @return List of OrganizationDto
+     */
     public List<OrganizationDto> getAllOrganizations() {
-        List<Organization> organizations = organizationRepository.findAll();
-        return organizations.stream()
-                .map(this::convertToDto)
+        return organizationRepository.findAll().stream()
+                .map(OrganizationDto::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Updates an existing organization
+     * Only updates fields that are provided in the request (non-null)
+     *
+     * @param organization_id UUID of the organization to update
+     * @param request UpdateOrganizationRequest containing fields to update
+     * @return OrganizationDetailsDTO with updated organization information
+     * @throws ResponseStatusException if organization not found (404)
+     */
+    public OrganizationDetailsDTO updateOrganization(UUID organization_id, UpdateOrganizationRequest request) {
+        Organization organization = organizationRepository.findById(organization_id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Organization with ID " + organization_id + " not found"
+                ));
+
+        if (request.getLongName() != null) {
+            organization.setLongName(request.getLongName());
+        }
+
+        if (request.getShortName() != null) {
+            organization.setShortName(request.getShortName());
+        }
+
+        if (request.getEmail() != null) {
+            organization.setEmail(request.getEmail());
+        }
+
+        if (request.getDescription() != null) {
+            organization.setDescription(request.getDescription());
+        }
+
+        if (request.getLogoUrl() != null) {
+            organization.setLogoUrl(request.getLogoUrl());
+        }
+
+        if (request.getWebsiteUrl() != null) {
+            organization.setWebsiteUrl(request.getWebsiteUrl());
+        }
+
+        if (request.getSocialNetwork() != null) {
+            organization.setSocialNetwork(request.getSocialNetwork());
+        }
+
+        if (request.getLegalForm() != null) {
+            organization.setLegalForm(request.getLegalForm());
+        }
+
+        if (request.getBusinessRegistrationNumber() != null) {
+            organization.setBusinessRegistrationNumber(request.getBusinessRegistrationNumber());
+        }
+
+        if (request.getTaxNumber() != null) {
+            organization.setTaxNumber(request.getTaxNumber());
+        }
+
+        if (request.getCapitalShare() != null) {
+            organization.setCapitalShare(request.getCapitalShare());
+        }
+
+        if (request.getRegistrationDate() != null) {
+            organization.setRegistrationDate(request.getRegistrationDate());
+        }
+
+        if (request.getCeoName() != null) {
+            organization.setCeoName(request.getCeoName());
+        }
+
+        if (request.getYearFounded() != null) {
+            organization.setYearFounded(request.getYearFounded());
+        }
+
+        if (request.getBusinessDomains() != null) {
+            organization.setBusinessDomains(request.getBusinessDomains());
+        }
+
+        if (request.getKeywords() != null) {
+            organization.setKeywords(request.getKeywords());
+        }
+
+        organization.setUpdatedAt(LocalDateTime.now());
+
+        Organization updated_organization = organizationRepository.save(organization);
+        return OrganizationDetailsDTO.fromEntity(updated_organization);
+    }
+
+    /**
+     * Deletes an organization (soft delete)
+     * Sets the deletedAt timestamp instead of physically removing the record
+     * Also checks if organization has any active agencies
+     *
+     * @param organization_id UUID of the organization to delete
+     * @throws ResponseStatusException if organization not found (404)
+     * @throws ResponseStatusException if organization has active agencies (409)
+     */
+    public void deleteOrganization(UUID organization_id) {
+        Organization organization = organizationRepository.findById(organization_id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Organization with ID " + organization_id + " not found"
+                ));
+
+        List<AgenceVoyage> agencies = agenceVoyageRepository.findByOrganisationId(organization_id);
+        if (!agencies.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Cannot delete organization with " + agencies.size() + " active agencies. " +
+                            "Please delete or transfer all agencies first."
+            );
+        }
+
+        organization.setDeletedAt(LocalDateTime.now());
+        organization.setActive(false);
+        organization.setStatus("DELETED");
+        organization.setUpdatedAt(LocalDateTime.now());
+
+        organizationRepository.save(organization);
     }
 }
