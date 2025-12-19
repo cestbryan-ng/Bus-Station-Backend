@@ -22,9 +22,9 @@ stationnement et ainsi que la gestion des reservations de voyage pour les client
 Pour compiler le projet suivez ces instructions :
 
 - Créer la base de donnée pgsql avec pour nom **agence_voyage**
-- Puis executer le script sql d'export qui se trouve à la racine **export.sql**
 - Une fois la base de donnée crée, modifier les fichiers *application.propreties* présents dans les dossiers **agence_de_voyage_application**, **annulation_reservation** et **database_agence_voyage**, mettez les identifiants du compte pour se connecter à votre bd
 - Suivez ces commandes, pour démarrer le serveur
+- Après avoir démarrer le serveur, executez le script test.sql pour les données test
 
 ```bash
 mvn clean install
