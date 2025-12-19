@@ -73,6 +73,8 @@ public class VoyageMapper {
         // cette utilisateur est bien une agence
         voyagePreviewDTO.setLieuDepart(voyage.getLieuDepart());
         voyagePreviewDTO.setLieuArrive(voyage.getLieuArrive());
+        voyagePreviewDTO.setPointDeDepart(voyage.getPointDeDepart());
+        voyagePreviewDTO.setPointArrivee(voyage.getPointArrivee());
         voyagePreviewDTO.setNbrPlaceRestante(voyage.getNbrPlaceRestante());
         voyagePreviewDTO.setNbrPlaceReservable(voyage.getNbrPlaceReservable());
         voyagePreviewDTO.setDureeVoyage(voyage.getDureeVoyage());

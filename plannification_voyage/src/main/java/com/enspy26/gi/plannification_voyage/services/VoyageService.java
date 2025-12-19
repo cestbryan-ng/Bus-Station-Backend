@@ -309,32 +309,32 @@ public class VoyageService {
      * Search voyages with flexible filters
      * Filters on cities (lieu) and optionally on zones (point) and date
      *
-     * @param ville_depart Departure city (required)
-     * @param ville_arrive Arrival city (required)
-     * @param zone_depart Departure zone (optional)
-     * @param zone_arrive Arrival zone (optional)
-     * @param date_depart Departure date (optional)
+     * @param lieuDepart Departure city (required)
+     * @param lieuArrive Arrival city (required)
+     * @param pointDeDepart Departure zone (optional)
+     * @param pointArrivee Arrival zone (optional)
+     * @param dateDepart Departure date (optional)
      * @param page Page number
      * @param size Page size
      * @return Page of VoyagePreviewDTO matching filters
      */
     public Page<VoyagePreviewDTO> searchVoyages(
-            String ville_depart,
-            String ville_arrive,
-            String zone_depart,
-            String zone_arrive,
-            Date date_depart,
+            String lieuDepart,
+            String lieuArrive,
+            String pointDeDepart,
+            String pointArrivee,
+            Date dateDepart,
             int page,
             int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
 
         Page<Voyage> voyagesPage = voyageRepository.searchVoyages(
-                ville_depart,
-                ville_arrive,
-                zone_depart,
-                zone_arrive,
-                date_depart,
+                lieuDepart,
+                lieuArrive,
+                pointDeDepart,
+                pointArrivee,
+                dateDepart,
                 pageable
         );
 

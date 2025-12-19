@@ -39,7 +39,7 @@ public class security {
                                     .requestMatchers("/utilisateur/connexion").permitAll()
                                     .requestMatchers("/utilisateur/profil/*").permitAll()
                                     .requestMatchers("/utilisateur/test").permitAll()
-                                    // .requestMatchers("/voyage/**").permitAll()
+                                    .requestMatchers("/voyage/**").permitAll()
                                     .requestMatchers("/voyage/all").permitAll()
                                     .requestMatchers("/voyage/byId/*").permitAll()
                                     .requestMatchers("/reservation/payer").permitAll()
@@ -47,6 +47,8 @@ public class security {
                                     .requestMatchers("/v3/api-docs/**").permitAll()
                                     .requestMatchers("/organizations/**").permitAll()
                                     .requestMatchers("/agence").permitAll()
+                                    .requestMatchers("/agence/**").permitAll()
+                                    .requestMatchers("/statistics/**").permitAll()
                                     .requestMatchers("/notification/**").permitAll()
                                     .requestMatchers("/ws/**").permitAll()
                                     .anyRequest().authenticated();

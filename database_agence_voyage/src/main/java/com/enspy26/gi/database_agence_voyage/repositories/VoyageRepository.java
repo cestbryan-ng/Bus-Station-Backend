@@ -25,11 +25,6 @@ public interface VoyageRepository extends JpaRepository<Voyage, UUID> {
 
     /**
      * Search voyages by departure and arrival cities
-     *
-     * @param lieuDepart Departure city (ex: "Yaoundé")
-     * @param lieuArrive Arrival city (ex: "Douala")
-     * @param pageable Pagination info
-     * @return Page of matching voyages
      */
     Page<Voyage> findByLieuDepartAndLieuArrive(
             String lieuDepart,
@@ -39,13 +34,6 @@ public interface VoyageRepository extends JpaRepository<Voyage, UUID> {
 
     /**
      * Search voyages by cities and zones
-     *
-     * @param lieuDepart Departure city
-     * @param lieuArrive Arrival city
-     * @param pointDeDepart Departure zone (ex: "Mvan")
-     * @param pointArrivee Arrival zone (ex: "Akwa")
-     * @param pageable Pagination info
-     * @return Page of matching voyages
      */
     Page<Voyage> findByLieuDepartAndLieuArriveAndPointDeDepartAndPointArrivee(
             String lieuDepart,
@@ -57,22 +45,14 @@ public interface VoyageRepository extends JpaRepository<Voyage, UUID> {
 
     /**
      * Advanced search with optional filters
-     * Uses JPQL for flexible filtering
-     *
-     * @param lieuDepart Departure city (required)
-     * @param lieuArrive Arrival city (required)
-     * @param pointDeDepart Departure zone (optional)
-     * @param pointArrivee Arrival zone (optional)
-     * @param dateDepart Departure date (optional)
-     * @param pageable Pagination info
-     * @return Page of matching voyages
+     * Uses JPQL with CAST for PostgreSQL compatibility
      */
     @Query("SELECT v FROM Voyage v WHERE " +
             "v.lieuDepart = :lieuDepart AND " +
             "v.lieuArrive = :lieuArrive AND " +
             "(:pointDeDepart IS NULL OR v.pointDeDepart = :pointDeDepart) AND " +
             "(:pointArrivee IS NULL OR v.pointArrivee = :pointArrivee) AND " +
-            "(:dateDepart IS NULL OR DATE(v.dateDepartPrev) = DATE(:dateDepart))")
+            "(:dateDepart IS NULL OR CAST(v.dateDepartPrev AS date) = CAST(:dateDepart AS date))")
     Page<Voyage> searchVoyages(
             @Param("lieuDepart") String lieuDepart,
             @Param("lieuArrive") String lieuArrive,

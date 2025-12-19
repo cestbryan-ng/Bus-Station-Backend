@@ -118,14 +118,14 @@ public class VoyageController {
                     .body("Erreur lors de la récupération des voyages de l'agence");
         }
     }
-
     @Operation(
             summary = "Rechercher des voyages",
             description = "Recherche des voyages par ville de départ/arrivée (obligatoire) " +
                     "et optionnellement par zone et date. " +
-                    "- ville_depart/ville_arrive : Ville (ex: 'Yaoundé', 'Douala') " +
-                    "- zone_depart/zone_arrive : Zone dans la ville (ex: 'Mvan', 'Akwa') " +
-                    "- date_depart : Date au format 'yyyy-MM-dd'"
+                    "Paramètres: " +
+                    "- lieuDepart/lieuArrive : Ville (ex: 'Yaoundé', 'Douala') " +
+                    "- pointDeDepart/pointArrivee : Zone dans la ville (ex: 'Mvan', 'Akwa') " +
+                    "- dateDepart : Date au format 'yyyy-MM-dd'"
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -143,20 +143,20 @@ public class VoyageController {
     })
     @GetMapping("/search")
     public ResponseEntity<?> searchVoyages(
-            @RequestParam(name = "ville_depart") String villeDepart,
-            @RequestParam(name = "ville_arrive") String villeArrive,
-            @RequestParam(name = "zone_depart", required = false) String zoneDepart,
-            @RequestParam(name = "zone_arrive", required = false) String zoneArrive,
-            @RequestParam(name = "date_depart", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateDepart,
+            @RequestParam(name = "lieuDepart") String lieuDepart,           // ✅ Cohérent
+            @RequestParam(name = "lieuArrive") String lieuArrive,           // ✅ Cohérent
+            @RequestParam(name = "pointDeDepart", required = false) String pointDeDepart,   // ✅ Cohérent
+            @RequestParam(name = "pointArrivee", required = false) String pointArrivee,     // ✅ Cohérent
+            @RequestParam(name = "dateDepart", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date dateDepart,  // ✅ Cohérent
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size
     ) {
         try {
             Page<VoyagePreviewDTO> voyages = voyageService.searchVoyages(
-                    villeDepart,
-                    villeArrive,
-                    zoneDepart,
-                    zoneArrive,
+                    lieuDepart,
+                    lieuArrive,
+                    pointDeDepart,
+                    pointArrivee,
                     dateDepart,
                     page,
                     size
