@@ -78,20 +78,26 @@ public class VoyageService {
     }
 
     public Page<VoyagePreviewDTO> findAllPreview(int page, int size) {
-        if (voyageRepository.count() < size) {
-            size = (int) voyageRepository.count();
+        // Gérer le cas où la table est vide
+        long totalVoyages = voyageRepository.count();
+        if (totalVoyages == 0) {
+            // Retourner une page vide
+            return Page.empty(PageRequest.of(page, size));
         }
-        Pageable pageable = PageRequest.of(0, size);
-        Slice<Voyage> voyagesSlice = voyageRepository.findAll(pageable);
-        pageable = voyagesSlice.getPageable();
-        if (page > 0) {
-            for (int i = 0; i < page; i++) {
 
-                pageable = voyagesSlice.nextPageable();
-                voyagesSlice = voyageRepository.findAll(pageable);
-            }
-            pageable = PageRequest.of(page, size);
+        // Ajuster la taille de page si nécessaire
+        if (totalVoyages < size) {
+            size = (int) totalVoyages;
         }
+
+        // S'assurer que size est au minimum 1
+        if (size < 1) {
+            size = 1;
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+        Slice<Voyage> voyagesSlice = voyageRepository.findAll(pageable);
+
         // Récupère tous les voyages et les traite en un flux
         List<VoyagePreviewDTO> previewVoyageList = voyagesSlice.stream()
                 .map(voyage -> {
@@ -109,9 +115,7 @@ public class VoyageService {
                 .filter(Objects::nonNull) // Exclut les valeurs null
                 .collect(Collectors.toList()); // Convertit en liste
 
-        long total = voyageRepository.count();
-
-        return PaginationUtils.ContentToPage(previewVoyageList, pageable, total);
+        return PaginationUtils.ContentToPage(previewVoyageList, pageable, totalVoyages);
     }
 
     public VoyageDetailsDTO findById(UUID id) {

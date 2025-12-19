@@ -36,7 +36,7 @@ import com.github.javafaker.Faker;
 
 import lombok.AllArgsConstructor;
 
-@Component
+// @Component
 @AllArgsConstructor
 public class DataSeeder implements CommandLineRunner {
   private final VehiculeRepository vehiculeRepository;
