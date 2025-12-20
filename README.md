@@ -22,7 +22,7 @@ stationnement et ainsi que la gestion des reservations de voyage pour les client
 Pour compiler le projet suivez ces instructions :
 
 - Créer la base de donnée pgsql avec pour nom **agence_voyage**
-- Une fois la base de donnée crée, modifier les fichiers *application.propreties* présents dans les dossiers **agence_de_voyage_application**, **annulation_reservation** et **database_agence_voyage**, mettez les identifiants du compte pour se connecter à votre bd
+- Une fois la base de donnée crée, modifier les fichiers *application.propreties* présents dans les dossiers **agence_de_voyage_application**, **annulation_reservation** et **database_agence_voyage**, mettez les identifiants du compte pour se connecter à votre bd, sans oublier de mettre le champ **spring.jpa.hibernate.ddl-auto** sur **create**
 - Suivez ces commandes, pour démarrer le serveur
 - Après avoir démarrer le serveur, executez le script test.sql pour les données test situé **src/main/resources/test.sql**
 
