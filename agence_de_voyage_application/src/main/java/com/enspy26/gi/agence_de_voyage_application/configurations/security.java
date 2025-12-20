@@ -43,6 +43,8 @@ public class security {
                                     .requestMatchers("/voyage/all").permitAll()
                                     .requestMatchers("/voyage/byId/*").permitAll()
                                     .requestMatchers("/reservation/payer").permitAll()
+                                    .requestMatchers("/historique/**").permitAll()
+                                    .requestMatchers("/coupon/**").permitAll()
                                     .requestMatchers("/swagger-ui/**").permitAll()
                                     .requestMatchers("/v3/api-docs/**").permitAll()
                                     .requestMatchers("/organizations/**").permitAll()
