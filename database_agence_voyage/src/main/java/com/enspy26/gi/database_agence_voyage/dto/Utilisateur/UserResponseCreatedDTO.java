@@ -38,6 +38,7 @@ public class UserResponseCreatedDTO {
   private String username;
   private String phone_number;
   private List<RoleType> roles;
+  private String address;
 
   public static UserResponseCreatedDTO fromUser(User user) {
     UserResponseCreatedDTO dto = new UserResponseCreatedDTO();
@@ -50,6 +51,7 @@ public class UserResponseCreatedDTO {
     dto.setLast_name(user.getNom());
     dto.setPhone_number(user.getTelNumber());
     dto.setGender(user.getGenre());
+    dto.setAddress(user.getAddress());
 
     // Map roles list
     dto.setRoles(user.getRole());

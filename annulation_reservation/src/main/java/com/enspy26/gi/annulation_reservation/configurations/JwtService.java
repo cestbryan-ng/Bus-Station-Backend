@@ -55,6 +55,7 @@ public class JwtService {
         userResponseDTO.setUserId(user.getUserId());
         userResponseDTO.setRole(user.getRole());
         userResponseDTO.setPhone_number(user.getTelNumber());
+        userResponseDTO.setAddress(user.getAddress());
 
         return userResponseDTO;
     }

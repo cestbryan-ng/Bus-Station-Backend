@@ -31,4 +31,5 @@ public class UserDTO {
   private List<RoleType> role;
   @NotNull(message = "Le genre ne peut pas être null")
   private Gender gender;
+  private String address;
 }

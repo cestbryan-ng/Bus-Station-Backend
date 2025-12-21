@@ -60,7 +60,7 @@ public class User implements UserDetails {
     @Column(name = "businessactortype")
     private BusinessActorType businessActorType;
 
-    @Column(nullable = true)
+    @Column(nullable = true, name = "address")
     private String address;
 
     @Column(name = "idcoordonneeGPS", nullable = true)

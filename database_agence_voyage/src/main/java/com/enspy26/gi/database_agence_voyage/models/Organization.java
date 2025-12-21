@@ -1,14 +1,6 @@
 package com.enspy26.gi.database_agence_voyage.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.FetchType;
-
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -101,5 +93,6 @@ public class Organization {
     @Column(name = "keyword")
     private List<String> keywords;
 
+    @Column(name = "status")
     private String status;
 }

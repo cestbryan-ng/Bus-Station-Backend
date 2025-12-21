@@ -17,6 +17,7 @@ public class UserResponseDTO {
   private String email;
   private String username;
   private String phone_number;
+  private String address;
   private List<RoleType> role;
 
   public static UserResponseDTO fromUser(User user) {
@@ -28,6 +29,7 @@ public class UserResponseDTO {
     userResponseDTO.setUserId(user.getUserId());
     userResponseDTO.setRole(user.getRole());
     userResponseDTO.setPhone_number(user.getTelNumber());
+    userResponseDTO.setAddress(user.getAddress());
 
     return userResponseDTO;
   }
