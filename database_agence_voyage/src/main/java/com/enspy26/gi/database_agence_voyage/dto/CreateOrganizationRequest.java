@@ -7,6 +7,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateOrganizationRequest {
+    @NotNull(message = "User ID is required")
+    @JsonProperty("user_id")
+    private UUID userId;
+
   @NotBlank(message = "Long name is required")
   @JsonProperty("long_name")
   private String longName;

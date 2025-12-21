@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.enspy26.gi.database_agence_voyage.models.AgenceVoyage;
 import com.enspy26.gi.database_agence_voyage.repositories.AgenceVoyageRepository;
+import com.enspy26.gi.database_agence_voyage.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -34,6 +35,7 @@ public class OrganizationService {
 
     private final OrganizationRepository organizationRepository;
     private final AgenceVoyageRepository agenceVoyageRepository;
+    private final UserRepository userRepository;
 
     /**
      * Retrieves all agencies belonging to a specific organization
@@ -69,15 +71,22 @@ public class OrganizationService {
      * @return OrganizationDto of the created organization
      */
     public OrganizationDto createOrganization(CreateOrganizationRequest request) {
+        if (!userRepository.existsById(request.getUserId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "User with ID " + request.getUserId() + " not found"
+            );
+        }
+
         Organization organization = new Organization();
 
-        // Set basic fields
         organization.setId(UUID.randomUUID());
         organization.setOrganizationId(UUID.randomUUID());
         organization.setCreatedAt(LocalDateTime.now());
         organization.setUpdatedAt(LocalDateTime.now());
+        organization.setCreatedBy(request.getUserId());
+        organization.setUpdatedBy(request.getUserId());
 
-        // Set fields from request
         organization.setLongName(request.getLongName());
         organization.setShortName(request.getShortName());
         organization.setEmail(request.getEmail());
@@ -95,7 +104,6 @@ public class OrganizationService {
         organization.setBusinessDomains(request.getBusinessDomains());
         organization.setKeywords(request.getKeywords());
 
-        // Set default values
         organization.setIndividualBusiness(false);
         organization.setActive(true);
         organization.setStatus("ACTIVE");

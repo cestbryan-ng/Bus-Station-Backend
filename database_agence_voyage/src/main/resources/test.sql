@@ -2,7 +2,7 @@
 -- DONNÉES DE TEST - INSERT UNIQUEMENT
 -- ============================================================================
 
--- UTILISATEURS
+-- UTILISATEURS, mais pour ça vous devez les créer depuis le swagger ou postman, puis adapter les id respectifs
 INSERT INTO app_user (userid, username, password, nom, prenom, email, telnumber, role, genre, businessactortype)
 VALUES 
 ('66666666-6666-6666-6666-666666666666', 'bsm', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhkO', 
