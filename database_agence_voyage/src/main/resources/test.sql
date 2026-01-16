@@ -268,4 +268,3 @@ COPY public.voyage (nbrplaceconfirm, nbrplacereservable, nbrplacereserve, nbrpla
 --
 
 \unrestrict YZ2if472ecm38gjn7DqWl94fXEAtkM7yuwTkhNN9zbxo8V15aGkiGPPTnK1acHI
-
