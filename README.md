@@ -14,7 +14,7 @@ stationnement et ainsi que la gestion des reservations de voyage pour les client
 
 - [Java 17+ / JDK17+](https://www.oracle.com/java/technologies/downloads/#jdk25-windows)
 - [Postgresql](https://www.postgresql.org/download/)
-- [Spring Boot](https://maven.apache.org/download.cgi)
+- [Spring Boot(Maven)](https://maven.apache.org/download.cgi)
 
 
 ## SetUp
