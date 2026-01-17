@@ -264,4 +264,49 @@ public class StatisticController {
                     .body("Erreur lors de la récupération de la vue d'ensemble");
         }
     }
+
+    @Operation(
+            summary = "Obtenir les statistiques d'un voyage",
+            description = "Récupère toutes les statistiques et informations d'un voyage spécifique. " +
+                    "Inclut les infos générales (titre, trajet, chauffeur, véhicule), les stats de réservation " +
+                    "(places, revenus, taux d'occupation), et les données pour graphiques (répartition par statut, " +
+                    "genre, âge, évolution dans le temps)."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Statistiques récupérées avec succès",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = VoyageStatisticsDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Voyage non trouvé",
+                    content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Non authentifié - Token JWT manquant ou invalide",
+                    content = @Content(mediaType = "application/json")
+            )
+    })
+    @GetMapping("/voyage/{voyageId}")
+    public ResponseEntity<?> getVoyageStatistics(@PathVariable UUID voyageId) {
+        try {
+            log.info("Récupération des statistiques pour le voyage {}", voyageId);
+            VoyageStatisticsDTO statistics = statisticService.getVoyageStatistics(voyageId);
+            return ResponseEntity.ok(statistics);
+        } catch (ResponseStatusException e) {
+            log.error("Erreur lors de la récupération des statistiques pour le voyage {}: {}",
+                    voyageId, e.getReason());
+            return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
+        } catch (Exception e) {
+            log.error("Erreur interne lors de la récupération des statistiques pour le voyage {}: {}",
+                    voyageId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de la récupération des statistiques");
+        }
+    }
 }

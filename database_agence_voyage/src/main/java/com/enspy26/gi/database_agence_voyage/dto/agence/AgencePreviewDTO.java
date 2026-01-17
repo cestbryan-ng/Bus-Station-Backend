@@ -26,6 +26,9 @@ public class AgencePreviewDTO {
     @JsonProperty("organisation_id")
     private UUID organisationId;
 
+    @JsonProperty("user_id")
+    private UUID userId;
+
     @JsonProperty("long_name")
     private String longName;
 
@@ -59,6 +62,7 @@ public class AgencePreviewDTO {
 
         dto.setAgencyId(agence.getAgencyId());
         dto.setOrganisationId(agence.getOrganisationId());
+        dto.setUserId(agence.getUserId());
         dto.setLongName(agence.getLongName());
         dto.setShortName(agence.getShortName());
         dto.setLocation(agence.getLocation());

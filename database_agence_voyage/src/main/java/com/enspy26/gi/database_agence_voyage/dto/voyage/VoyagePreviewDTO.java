@@ -25,6 +25,8 @@ public class VoyagePreviewDTO {
     private String pointArrivee;
     private int nbrPlaceRestante;
     private int nbrPlaceReservable;
+    private int nbrPlaceConfirm;
+    private int nbrPlaceReserve;
     private Date dateDepartPrev;
     private Duration dureeVoyage;
     private String nomClasseVoyage;

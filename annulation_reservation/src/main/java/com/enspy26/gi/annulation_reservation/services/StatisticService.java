@@ -1,25 +1,22 @@
 package com.enspy26.gi.annulation_reservation.services;
 
-import com.enspy26.gi.database_agence_voyage.dto.statistics.AgenceStatisticsDTO;
-import com.enspy26.gi.database_agence_voyage.dto.statistics.AgenceEvolutionDTO;
-import com.enspy26.gi.database_agence_voyage.dto.statistics.EvolutionData;
+import com.enspy26.gi.database_agence_voyage.dto.statistics.*;
 import com.enspy26.gi.database_agence_voyage.enums.BusinessActorType;
 import com.enspy26.gi.database_agence_voyage.models.*;
 import com.enspy26.gi.database_agence_voyage.repositories.*;
 import com.enspy26.gi.database_agence_voyage.enums.StatutVoyage;
 import com.enspy26.gi.database_agence_voyage.enums.StatutReservation;
-import com.enspy26.gi.database_agence_voyage.dto.statistics.OrganizationStatisticsDTO;
 import com.enspy26.gi.database_agence_voyage.models.Organization;
 import com.enspy26.gi.database_agence_voyage.repositories.OrganizationRepository;
 import com.enspy26.gi.database_agence_voyage.enums.StatutValidation;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-import com.enspy26.gi.database_agence_voyage.dto.statistics.AgencyComparisonDTO;
-import com.enspy26.gi.database_agence_voyage.dto.statistics.OrganizationAgenciesComparisonDTO;
+
 import java.util.ArrayList;
 import java.util.Comparator;
-import com.enspy26.gi.database_agence_voyage.dto.statistics.BsmOverviewDTO;
+
 import java.util.Set;
 import java.util.HashSet;
 
@@ -45,6 +42,8 @@ public class StatisticService {
     private final AgenceVoyageRepository agenceVoyageRepository;
     private final EmployeAgenceVoyageRepository employeAgenceVoyageRepository;
     private final OrganizationRepository organizationRepository;
+    private final PassagerRepository passagerRepository;
+    private final VehiculeRepository vehiculeRepository;
 
     public AgenceStatisticsDTO getAgenceStatistics(UUID agenceId) {
         // Vérifier que l'agence existe
@@ -81,6 +80,89 @@ public class StatisticService {
         // Taux d'occupation
         stats.setTauxOccupation(getTauxOccupation(agenceId));
 
+        // Revenus par classe de voyage
+        Map<String, Double> revenueByClass = new HashMap<>();
+        List<ClassVoyage> classes = classVoyageRepository.findByIdAgenceVoyage(agenceId);
+        for (ClassVoyage classe : classes) {
+            revenueByClass.put(classe.getNom(), 0.0);
+        }
+
+// Top destinations et origines
+        Map<String, Integer> destinations = new HashMap<>();
+        Map<String, Integer> origins = new HashMap<>();
+
+// Réservations par jour de la semaine
+        Map<String, Integer> reservationsByDayOfWeek = new LinkedHashMap<>();
+        reservationsByDayOfWeek.put("MONDAY", 0);
+        reservationsByDayOfWeek.put("TUESDAY", 0);
+        reservationsByDayOfWeek.put("WEDNESDAY", 0);
+        reservationsByDayOfWeek.put("THURSDAY", 0);
+        reservationsByDayOfWeek.put("FRIDAY", 0);
+        reservationsByDayOfWeek.put("SATURDAY", 0);
+        reservationsByDayOfWeek.put("SUNDAY", 0);
+
+// Voyages par chauffeur
+        Map<String, Integer> tripsByDriver = new HashMap<>();
+
+        List<LigneVoyage> lignes = ligneVoyageRepository.findByIdAgenceVoyage(agenceId);
+
+        for (LigneVoyage ligne : lignes) {
+            Voyage voyage = voyageRepository.findById(ligne.getIdVoyage()).orElse(null);
+            if (voyage != null) {
+                // Destinations et origines
+                String destination = voyage.getLieuArrive();
+                String origin = voyage.getLieuDepart();
+                destinations.put(destination, destinations.getOrDefault(destination, 0) + 1);
+                origins.put(origin, origins.getOrDefault(origin, 0) + 1);
+
+                // Par chauffeur
+                if (ligne.getIdChauffeur() != null) {
+                    User chauffeur = userRepository.findById(
+                            chauffeurAgenceVoyageRepository.findById(ligne.getIdChauffeur())
+                                    .map(ChauffeurAgenceVoyage::getUserId).orElse(null)
+                    ).orElse(null);
+                    String driverName = chauffeur != null ? chauffeur.getPrenom() + " " + chauffeur.getNom() : "Inconnu";
+                    tripsByDriver.put(driverName, tripsByDriver.getOrDefault(driverName, 0) + 1);
+                }
+
+                // Réservations
+                List<Reservation> reservations = reservationRepository.findByIdVoyage(voyage.getIdVoyage());
+                for (Reservation reservation : reservations) {
+                    // Par jour de la semaine
+                    if (reservation.getDateReservation() != null) {
+                        String dayOfWeek = reservation.getDateReservation().toInstant()
+                                .atZone(ZoneId.systemDefault()).getDayOfWeek().name();
+                        reservationsByDayOfWeek.put(dayOfWeek, reservationsByDayOfWeek.get(dayOfWeek) + 1);
+                    }
+
+                    // Revenus par classe
+                    ClassVoyage classe = classVoyageRepository.findById(ligne.getIdClassVoyage()).orElse(null);
+                    if (classe != null) {
+                        revenueByClass.put(classe.getNom(),
+                                revenueByClass.getOrDefault(classe.getNom(), 0.0) + reservation.getPrixTotal());
+                    }
+                }
+            }
+        }
+
+// Top 5 destinations
+        Map<String, Integer> topDestinations = destinations.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                .limit(5)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
+// Top 5 origines
+        Map<String, Integer> topOrigins = origins.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                .limit(5)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
+        stats.setRevenueByClass(revenueByClass);
+        stats.setTopDestinations(topDestinations);
+        stats.setTopOrigins(topOrigins);
+        stats.setReservationsByDayOfWeek(reservationsByDayOfWeek);
+        stats.setTripsByDriver(tripsByDriver);
+
         return stats;
     }
 
@@ -103,6 +185,64 @@ public class StatisticService {
 
         // Évolution des utilisateurs
         evolution.setEvolutionUtilisateurs(getEvolutionUtilisateurs(agenceId));
+
+        // Évolution taux d'occupation
+        List<EvolutionData> evolutionTauxOccupation = new ArrayList<>();
+
+// Évolution annulations
+        List<EvolutionData> evolutionAnnulations = new ArrayList<>();
+
+// Maps pour graphiques barres
+        Map<String, Double> revenuePerMonth = new LinkedHashMap<>();
+        Map<String, Integer> reservationsPerMonth = new LinkedHashMap<>();
+
+        LocalDate now = LocalDate.now();
+        List<LigneVoyage> lignes = ligneVoyageRepository.findByIdAgenceVoyage(agenceId);
+
+        for (int i = 5; i >= 0; i--) {
+            LocalDate mois = now.minusMonths(i);
+            String monthKey = mois.getYear() + "-" + String.format("%02d", mois.getMonthValue());
+
+            int totalPlaces = 0;
+            int placesReservees = 0;
+            int annulations = 0;
+            double revenue = 0.0;
+            int reservationCount = 0;
+
+            for (LigneVoyage ligne : lignes) {
+                Voyage voyage = voyageRepository.findById(ligne.getIdVoyage()).orElse(null);
+                if (voyage != null && voyage.getDateDepartPrev() != null) {
+                    LocalDate voyageDate = voyage.getDateDepartPrev().toInstant()
+                            .atZone(ZoneId.systemDefault()).toLocalDate();
+
+                    if (voyageDate.getYear() == mois.getYear() && voyageDate.getMonthValue() == mois.getMonthValue()) {
+                        totalPlaces += voyage.getNbrPlaceReservable();
+                        placesReservees += voyage.getNbrPlaceReserve();
+
+                        List<Reservation> reservations = reservationRepository.findByIdVoyage(voyage.getIdVoyage());
+                        for (Reservation reservation : reservations) {
+                            reservationCount++;
+                            revenue += reservation.getPrixTotal();
+
+                            if (reservation.getStatutReservation() == StatutReservation.ANNULER) {
+                                annulations++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            double tauxOccupation = totalPlaces > 0 ? (double) placesReservees / totalPlaces : 0.0;
+            evolutionTauxOccupation.add(new EvolutionData(mois, (long) (tauxOccupation * 100), 0.0));
+            evolutionAnnulations.add(new EvolutionData(mois, annulations, 0.0));
+            revenuePerMonth.put(monthKey, revenue);
+            reservationsPerMonth.put(monthKey, reservationCount);
+        }
+
+        evolution.setEvolutionTauxOccupation(evolutionTauxOccupation);
+        evolution.setEvolutionAnnulations(evolutionAnnulations);
+        evolution.setRevenuePerMonth(revenuePerMonth);
+        evolution.setReservationsPerMonth(reservationsPerMonth);
 
         return evolution;
     }
@@ -197,10 +337,7 @@ public class StatisticService {
         for (LigneVoyage ligneVoyage : lignesVoyage) {
             List<Reservation> reservations = reservationRepository.findByIdVoyage(ligneVoyage.getIdVoyage());
             for (Reservation reservation : reservations) {
-                if (reservation.getStatutReservation() == StatutReservation.CONFIRMER ||
-                        reservation.getStatutReservation() == StatutReservation.VALIDER) {
-                    totalRevenus += reservation.getMontantPaye();
-                }
+                totalRevenus += reservation.getPrixTotal();
             }
         }
 
@@ -317,13 +454,13 @@ public class StatisticService {
                 List<Reservation> reservations = reservationRepository.findByIdVoyage(ligneVoyage.getIdVoyage());
                 revenus += reservations.stream()
                         .filter(r -> {
-                            if (r.getDateConfirmation() == null) return false;
-                            LocalDate dateConfirmation = r.getDateConfirmation()
+                            if (r.getDateReservation() == null) return false;
+                            LocalDate dateReservation = r.getDateReservation()
                                     .toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                            return dateConfirmation.getYear() == mois.getYear() &&
-                                    dateConfirmation.getMonth() == mois.getMonth();
+                            return dateReservation.getYear() == mois.getYear() &&
+                                    dateReservation.getMonth() == mois.getMonth();
                         })
-                        .mapToDouble(Reservation::getMontantPaye)
+                        .mapToDouble(Reservation::getPrixTotal)
                         .sum();
             }
 
@@ -420,9 +557,8 @@ public class StatisticService {
             if (agence.getStatutValidation() == StatutValidation.VALIDEE) {
                 validated_agencies_count++;
 
-                total_employees += employeAgenceVoyageRepository.countByAgenceVoyageId(agence.getAgencyId());
-
-                total_drivers += chauffeurAgenceVoyageRepository.countByAgenceVoyageId(agence.getAgencyId());
+                total_employees += getNombreEmployes(agence.getAgencyId());
+                total_drivers += getNombreChauffeurs(agence.getAgencyId());
 
                 List<LigneVoyage> lignes = ligneVoyageRepository.findByIdAgenceVoyage(agence.getAgencyId());
                 total_vehicles += lignes.stream()
@@ -471,6 +607,91 @@ public class StatisticService {
                 .distinct()
                 .count();
         stats.setCitiesCovered((int) cities_covered);
+
+        // Évolution mensuelle (6 derniers mois)
+        Map<String, Integer> reservationsPerMonth = new LinkedHashMap<>();
+        Map<String, Double> revenuePerMonth = new LinkedHashMap<>();
+
+        LocalDate now = LocalDate.now();
+        for (int i = 5; i >= 0; i--) {
+            LocalDate month = now.minusMonths(i);
+            String monthKey = month.getYear() + "-" + String.format("%02d", month.getMonthValue());
+            reservationsPerMonth.put(monthKey, 0);
+            revenuePerMonth.put(monthKey, 0.0);
+        }
+
+// Répartitions
+        Map<String, Integer> reservationsByStatus = new HashMap<>();
+        reservationsByStatus.put("EN_ATTENTE", 0);
+        reservationsByStatus.put("CONFIRMER", 0);
+        reservationsByStatus.put("ANNULER", 0);
+        reservationsByStatus.put("VALIDER", 0);
+
+        Map<String, Integer> tripsByStatus = new HashMap<>();
+        tripsByStatus.put("EN_ATTENTE", 0);
+        tripsByStatus.put("EN_COURS", 0);
+        tripsByStatus.put("TERMINE", 0);
+        tripsByStatus.put("ANNULE", 0);
+        tripsByStatus.put("PUBLIE", 0);
+
+// Par agence
+        Map<String, Double> revenueByAgency = new HashMap<>();
+        Map<String, Integer> reservationsByAgency = new HashMap<>();
+
+// Dans la boucle existante des agences, ajouter :
+        for (AgenceVoyage agence : agencies) {
+            if (agence.getStatutValidation() == StatutValidation.VALIDEE) {
+                String agencyName = agence.getShortName() != null ? agence.getShortName() : agence.getLongName();
+                double agencyRevenue = 0.0;
+                int agencyReservations = 0;
+
+                List<LigneVoyage> lignes = ligneVoyageRepository.findByIdAgenceVoyage(agence.getAgencyId());
+
+                for (LigneVoyage ligne : lignes) {
+                    Voyage voyage = voyageRepository.findById(ligne.getIdVoyage()).orElse(null);
+
+                    if (voyage != null) {
+                        // Trips by status
+                        String tripStatus = voyage.getStatusVoyage() != null ? voyage.getStatusVoyage().name() : "EN_ATTENTE";
+                        tripsByStatus.put(tripStatus, tripsByStatus.getOrDefault(tripStatus, 0) + 1);
+
+                        List<Reservation> reservations = reservationRepository.findByIdVoyage(voyage.getIdVoyage());
+
+                        for (Reservation reservation : reservations) {
+                            agencyReservations++;
+                            agencyRevenue += reservation.getPrixTotal();
+
+                            // Reservations by status
+                            String resStatus = reservation.getStatutReservation() != null ? reservation.getStatutReservation().name() : "EN_ATTENTE";
+                            reservationsByStatus.put(resStatus, reservationsByStatus.getOrDefault(resStatus, 0) + 1);
+
+                            // Par mois
+                            if (reservation.getDateReservation() != null) {
+                                LocalDate resDate = reservation.getDateReservation().toInstant()
+                                        .atZone(ZoneId.systemDefault()).toLocalDate();
+                                String monthKey = resDate.getYear() + "-" + String.format("%02d", resDate.getMonthValue());
+
+                                if (reservationsPerMonth.containsKey(monthKey)) {
+                                    reservationsPerMonth.put(monthKey, reservationsPerMonth.get(monthKey) + 1);
+                                    revenuePerMonth.put(monthKey, revenuePerMonth.get(monthKey) + reservation.getPrixTotal());
+                                }
+                            }
+                        }
+                    }
+                }
+
+                revenueByAgency.put(agencyName, agencyRevenue);
+                reservationsByAgency.put(agencyName, agencyReservations);
+            }
+        }
+
+// Setter les nouvelles stats
+        stats.setReservationsPerMonth(reservationsPerMonth);
+        stats.setRevenuePerMonth(revenuePerMonth);
+        stats.setReservationsByStatus(reservationsByStatus);
+        stats.setTripsByStatus(tripsByStatus);
+        stats.setRevenueByAgency(revenueByAgency);
+        stats.setReservationsByAgency(reservationsByAgency);
 
         return stats;
     }
@@ -690,6 +911,293 @@ public class StatisticService {
             overview.setAverageOccupancyRate(0.0);
         }
 
+        // Évolution mensuelle (6 derniers mois)
+        Map<String, Integer> reservationsPerMonth = new LinkedHashMap<>();
+        Map<String, Double> revenuePerMonth = new LinkedHashMap<>();
+
+        LocalDate now = LocalDate.now();
+        for (int i = 5; i >= 0; i--) {
+            LocalDate month = now.minusMonths(i);
+            String monthKey = month.getYear() + "-" + String.format("%02d", month.getMonthValue());
+            reservationsPerMonth.put(monthKey, 0);
+            revenuePerMonth.put(monthKey, 0.0);
+        }
+
+// Répartitions
+        Map<String, Integer> reservationsByStatus = new HashMap<>();
+        reservationsByStatus.put("EN_ATTENTE", 0);
+        reservationsByStatus.put("CONFIRMER", 0);
+        reservationsByStatus.put("ANNULER", 0);
+        reservationsByStatus.put("VALIDER", 0);
+
+        Map<String, Integer> tripsByStatus = new HashMap<>();
+        tripsByStatus.put("EN_ATTENTE", 0);
+        tripsByStatus.put("EN_COURS", 0);
+        tripsByStatus.put("TERMINE", 0);
+        tripsByStatus.put("ANNULE", 0);
+        tripsByStatus.put("PUBLIE", 0);
+
+// Par agence
+        Map<String, Double> agencyRevenues = new HashMap<>();
+        Map<String, Integer> agencyReservations = new HashMap<>();
+
+// Par organisation
+        Map<String, Integer> agenciesPerOrganization = new HashMap<>();
+
+        for (AgenceVoyage agence : agencies_in_city) {
+            // Compter agences par organisation
+            if (agence.getOrganisationId() != null) {
+                Organization org = organizationRepository.findById(agence.getOrganisationId()).orElse(null);
+                String orgName = org != null ? org.getShortName() : "Inconnue";
+                agenciesPerOrganization.put(orgName, agenciesPerOrganization.getOrDefault(orgName, 0) + 1);
+            }
+
+            if (agence.getStatutValidation() == StatutValidation.VALIDEE) {
+                String agencyName = agence.getShortName() != null ? agence.getShortName() : agence.getLongName();
+                double agencyRevenue = 0.0;
+                int agencyReservationCount = 0;
+
+                List<LigneVoyage> lignes = ligneVoyageRepository.findByIdAgenceVoyage(agence.getAgencyId());
+
+                for (LigneVoyage ligne : lignes) {
+                    Voyage voyage = voyageRepository.findById(ligne.getIdVoyage()).orElse(null);
+
+                    if (voyage != null) {
+                        // Trips by status
+                        String tripStatus = voyage.getStatusVoyage() != null ? voyage.getStatusVoyage().name() : "EN_ATTENTE";
+                        tripsByStatus.put(tripStatus, tripsByStatus.getOrDefault(tripStatus, 0) + 1);
+
+                        List<Reservation> reservations = reservationRepository.findByIdVoyage(voyage.getIdVoyage());
+
+                        for (Reservation reservation : reservations) {
+                            agencyReservationCount++;
+                            agencyRevenue += reservation.getPrixTotal();
+
+                            // Reservations by status
+                            String resStatus = reservation.getStatutReservation() != null ? reservation.getStatutReservation().name() : "EN_ATTENTE";
+                            reservationsByStatus.put(resStatus, reservationsByStatus.getOrDefault(resStatus, 0) + 1);
+
+                            // Par mois
+                            if (reservation.getDateReservation() != null) {
+                                LocalDate resDate = reservation.getDateReservation().toInstant()
+                                        .atZone(ZoneId.systemDefault()).toLocalDate();
+                                String monthKey = resDate.getYear() + "-" + String.format("%02d", resDate.getMonthValue());
+
+                                if (reservationsPerMonth.containsKey(monthKey)) {
+                                    reservationsPerMonth.put(monthKey, reservationsPerMonth.get(monthKey) + 1);
+                                    revenuePerMonth.put(monthKey, revenuePerMonth.get(monthKey) + reservation.getPrixTotal());
+                                }
+                            }
+                        }
+                    }
+                }
+
+                agencyRevenues.put(agencyName, agencyRevenue);
+                agencyReservations.put(agencyName, agencyReservationCount);
+            }
+        }
+
+// Top 5 agences par revenus
+        Map<String, Double> topAgenciesByRevenue = agencyRevenues.entrySet().stream()
+                .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
+                .limit(5)
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
+// Top 5 agences par réservations
+        Map<String, Integer> topAgenciesByReservations = agencyReservations.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                .limit(5)
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
+// Setter les nouvelles stats
+        overview.setReservationsPerMonth(reservationsPerMonth);
+        overview.setRevenuePerMonth(revenuePerMonth);
+        overview.setReservationsByStatus(reservationsByStatus);
+        overview.setTripsByStatus(tripsByStatus);
+        overview.setTopAgenciesByRevenue(topAgenciesByRevenue);
+        overview.setTopAgenciesByReservations(topAgenciesByReservations);
+        overview.setAgenciesPerOrganization(agenciesPerOrganization);
+
         return overview;
+    }
+
+    public VoyageStatisticsDTO getVoyageStatistics(UUID voyageId) {
+        // Vérifier que le voyage existe
+        Voyage voyage = voyageRepository.findById(voyageId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Voyage non trouvé"));
+
+        VoyageStatisticsDTO stats = new VoyageStatisticsDTO();
+
+        // === INFOS GÉNÉRALES ===
+        stats.setVoyageId(voyage.getIdVoyage());
+        stats.setTitre(voyage.getTitre());
+        stats.setDescription(voyage.getDescription());
+        stats.setLieuDepart(voyage.getLieuDepart());
+        stats.setLieuArrive(voyage.getLieuArrive());
+        stats.setPointDepart(voyage.getPointDeDepart());
+        stats.setPointArrivee(voyage.getPointArrivee());
+        stats.setDateDepartPrev(voyage.getDateDepartPrev());
+        stats.setDateDepartEffectif(voyage.getDateDepartEffectif());
+        stats.setStatutVoyage(voyage.getStatusVoyage());
+
+        // Récupérer la ligne de voyage pour les infos complémentaires
+        LigneVoyage ligneVoyage = ligneVoyageRepository.findByIdVoyage(voyageId);
+
+        if (ligneVoyage != null) {
+            // Agence
+            AgenceVoyage agence = agenceVoyageRepository.findById(ligneVoyage.getIdAgenceVoyage()).orElse(null);
+            if (agence != null) {
+                stats.setNomAgence(agence.getLongName());
+            }
+
+            // Classe de voyage
+            ClassVoyage classeVoyage = classVoyageRepository.findById(ligneVoyage.getIdClassVoyage()).orElse(null);
+            if (classeVoyage != null) {
+                stats.setNomClasseVoyage(classeVoyage.getNom());
+                stats.setPrix(classeVoyage.getPrix());
+            }
+
+            // Chauffeur
+            if (ligneVoyage.getIdChauffeur() != null) {
+                ChauffeurAgenceVoyage chauffeur = chauffeurAgenceVoyageRepository.findById(ligneVoyage.getIdChauffeur()).orElse(null);
+                if (chauffeur != null) {
+                    User chauffeurUser = userRepository.findById(chauffeur.getUserId()).orElse(null);
+                    if (chauffeurUser != null) {
+                        stats.setNomChauffeur(chauffeurUser.getPrenom() + " " + chauffeurUser.getNom());
+                    }
+                }
+            }
+
+            // Véhicule
+            Vehicule vehicule = vehiculeRepository.findById(ligneVoyage.getIdVehicule()).orElse(null);
+            if (vehicule != null) {
+                stats.setVehiculeNom(vehicule.getNom());
+                stats.setVehiculePlaque(vehicule.getPlaqueMatricule());
+            }
+        }
+
+        // === STATS GÉNÉRALES ===
+        stats.setTotalPlaces(voyage.getNbrPlaceReservable() + voyage.getNbrPlaceReserve());
+        stats.setPlacesReservees(voyage.getNbrPlaceReserve());
+        stats.setPlacesConfirmees(voyage.getNbrPlaceConfirm());
+        stats.setPlacesRestantes(voyage.getNbrPlaceRestante());
+
+        int totalPlaces = voyage.getNbrPlaceReservable() + voyage.getNbrPlaceReserve();
+        stats.setTauxOccupation(totalPlaces > 0 ? (double) voyage.getNbrPlaceReserve() / totalPlaces : 0.0);
+
+        // Récupérer les réservations
+        List<Reservation> reservations = reservationRepository.findByIdVoyage(voyageId);
+        stats.setTotalReservations(reservations.size());
+
+        double revenusTotaux = 0.0;
+        double revenusConfirmes = 0.0;
+        int totalPassagers = 0;
+
+        // === STATS POUR GRAPHIQUES ===
+        Map<String, Integer> reservationsByStatus = new HashMap<>();
+        for (StatutReservation statut : StatutReservation.values()) {
+            reservationsByStatus.put(statut.name(), 0);
+        }
+
+        Map<String, Integer> passengersByGender = new HashMap<>();
+        passengersByGender.put("MALE", 0);
+        passengersByGender.put("FEMALE", 0);
+        passengersByGender.put("OTHER", 0);
+
+        Map<String, Integer> passengersByAgeGroup = new LinkedHashMap<>();
+        passengersByAgeGroup.put("0-17", 0);
+        passengersByAgeGroup.put("18-25", 0);
+        passengersByAgeGroup.put("26-35", 0);
+        passengersByAgeGroup.put("36-50", 0);
+        passengersByAgeGroup.put("51-65", 0);
+        passengersByAgeGroup.put("65+", 0);
+
+        Map<String, Integer> baggageDistribution = new LinkedHashMap<>();
+        baggageDistribution.put("0", 0);
+        baggageDistribution.put("1", 0);
+        baggageDistribution.put("2", 0);
+        baggageDistribution.put("3+", 0);
+
+        Map<String, Integer> reservationsPerDay = new LinkedHashMap<>();
+        Map<String, Double> revenuePerDay = new LinkedHashMap<>();
+
+        for (Reservation reservation : reservations) {
+            revenusTotaux += reservation.getPrixTotal();
+
+            // Réservations par statut
+            String statut = reservation.getStatutReservation().name();
+            reservationsByStatus.put(statut, reservationsByStatus.get(statut) + 1);
+
+            if (reservation.getStatutReservation() == StatutReservation.CONFIRMER ||
+                    reservation.getStatutReservation() == StatutReservation.VALIDER) {
+                revenusConfirmes += reservation.getPrixTotal();
+            }
+
+            // Par jour
+            if (reservation.getDateReservation() != null) {
+                String dayKey = reservation.getDateReservation().toInstant()
+                        .atZone(ZoneId.systemDefault()).toLocalDate().toString();
+                reservationsPerDay.put(dayKey, reservationsPerDay.getOrDefault(dayKey, 0) + 1);
+                revenuePerDay.put(dayKey, revenuePerDay.getOrDefault(dayKey, 0.0) + reservation.getPrixTotal());
+            }
+
+            // Récupérer les passagers de cette réservation
+            List<Passager> passagers = passagerRepository.findAllByIdReservation(reservation.getIdReservation());
+            totalPassagers += passagers.size();
+
+            for (Passager passager : passagers) {
+                // Par genre
+                if (passager.getGenre() != null) {
+                    String genre = passager.getGenre();
+                    passengersByGender.put(genre, passengersByGender.getOrDefault(genre, 0) + 1);
+                }
+
+                // Par tranche d'âge
+                if (passager.getAge() != 0) {
+                    int age = passager.getAge();
+                    String ageGroup;
+                    if (age < 18) ageGroup = "0-17";
+                    else if (age <= 25) ageGroup = "18-25";
+                    else if (age <= 35) ageGroup = "26-35";
+                    else if (age <= 50) ageGroup = "36-50";
+                    else if (age <= 65) ageGroup = "51-65";
+                    else ageGroup = "65+";
+                    passengersByAgeGroup.put(ageGroup, passengersByAgeGroup.get(ageGroup) + 1);
+                }
+
+                // Par nombre de bagages
+                if (passager.getNbrBaggage() != 0) {
+                    int nbBaggage = passager.getNbrBaggage();
+                    String baggageKey;
+                    if (nbBaggage == 0) baggageKey = "0";
+                    else if (nbBaggage == 1) baggageKey = "1";
+                    else if (nbBaggage == 2) baggageKey = "2";
+                    else baggageKey = "3+";
+                    baggageDistribution.put(baggageKey, baggageDistribution.get(baggageKey) + 1);
+                }
+            }
+        }
+
+        stats.setTotalPassagers(totalPassagers);
+        stats.setRevenusTotaux(revenusTotaux);
+        stats.setRevenusConfirmes(revenusConfirmes);
+        stats.setReservationsByStatus(reservationsByStatus);
+        stats.setPassengersByGender(passengersByGender);
+        stats.setPassengersByAgeGroup(passengersByAgeGroup);
+        stats.setReservationsPerDay(reservationsPerDay);
+        stats.setRevenuePerDay(revenuePerDay);
+        stats.setBaggageDistribution(baggageDistribution);
+
+        return stats;
     }
 }

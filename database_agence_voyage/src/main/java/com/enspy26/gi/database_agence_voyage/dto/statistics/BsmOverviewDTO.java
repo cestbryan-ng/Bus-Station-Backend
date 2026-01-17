@@ -17,6 +17,30 @@ import lombok.Data;
  */
 @Data
 public class BsmOverviewDTO {
+    // Pour graphique linéaire - Évolution mensuelle dans la ville
+    @JsonProperty("reservations_per_month")
+    private Map<String, Integer> reservationsPerMonth;
+
+    @JsonProperty("revenue_per_month")
+    private Map<String, Double> revenuePerMonth;
+
+    // Pour graphique camembert/donut - Répartitions
+    @JsonProperty("reservations_by_status")
+    private Map<String, Integer> reservationsByStatus;
+
+    @JsonProperty("trips_by_status")
+    private Map<String, Integer> tripsByStatus;
+
+    // Pour graphique barres - Top agences de la ville
+    @JsonProperty("top_agencies_by_revenue")
+    private Map<String, Double> topAgenciesByRevenue;
+
+    @JsonProperty("top_agencies_by_reservations")
+    private Map<String, Integer> topAgenciesByReservations;
+
+    // Pour graphique barres - Répartition par organisation
+    @JsonProperty("agencies_per_organization")
+    private Map<String, Integer> agenciesPerOrganization;
 
     private String ville;
 

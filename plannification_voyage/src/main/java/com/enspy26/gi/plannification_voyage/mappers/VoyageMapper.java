@@ -77,6 +77,8 @@ public class VoyageMapper {
         voyagePreviewDTO.setPointArrivee(voyage.getPointArrivee());
         voyagePreviewDTO.setNbrPlaceRestante(voyage.getNbrPlaceRestante());
         voyagePreviewDTO.setNbrPlaceReservable(voyage.getNbrPlaceReservable());
+        voyagePreviewDTO.setNbrPlaceConfirm(voyage.getNbrPlaceConfirm());
+        voyagePreviewDTO.setNbrPlaceReserve(voyage.getNbrPlaceReserve());
         voyagePreviewDTO.setDureeVoyage(voyage.getDureeVoyage());
         voyagePreviewDTO.setSmallImage(voyage.getSmallImage());
         voyagePreviewDTO.setBigImage(voyage.getBigImage());
@@ -108,6 +110,8 @@ public class VoyageMapper {
         voyageDetailsDTO.setDureeVoyage(voyage.getDureeVoyage());
         voyageDetailsDTO.setNbrPlaceReservable(voyage.getNbrPlaceReservable());
         voyageDetailsDTO.setNbrPlaceRestante(voyage.getNbrPlaceRestante());
+        voyageDetailsDTO.setNbrPlaceConfirm(voyage.getNbrPlaceConfirm());
+        voyageDetailsDTO.setNbrPlaceReserve(voyage.getNbrPlaceReserve());
         voyageDetailsDTO.setDatePublication(voyage.getDatePublication());
         voyageDetailsDTO.setDateLimiteConfirmation(voyage.getDateLimiteConfirmation());
         voyageDetailsDTO.setDateLimiteReservation(voyage.getDateLimiteReservation());

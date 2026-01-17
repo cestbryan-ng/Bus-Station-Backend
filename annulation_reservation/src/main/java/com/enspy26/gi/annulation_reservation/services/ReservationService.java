@@ -12,6 +12,8 @@ import com.enspy26.gi.database_agence_voyage.dto.Reservation.ReservationConfirmD
 import com.enspy26.gi.database_agence_voyage.dto.Reservation.ReservationDTO;
 import com.enspy26.gi.database_agence_voyage.dto.Reservation.ReservationDetailDTO;
 import com.enspy26.gi.database_agence_voyage.dto.Reservation.ReservationPreviewDTO;
+import com.enspy26.gi.database_agence_voyage.dto.payment.SimulatePaymentRequestDTO;
+import com.enspy26.gi.database_agence_voyage.dto.payment.SimulatePaymentResponseDTO;
 import com.enspy26.gi.database_agence_voyage.dto.voyage.VoyageDetailsDTO;
 import com.enspy26.gi.database_agence_voyage.dto.BilletDTO;
 import javax.persistence.EntityNotFoundException;
@@ -39,8 +41,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -507,6 +511,126 @@ public class ReservationService {
         }
 
         return responses;
+    }
+
+    public SimulatePaymentResponseDTO simulatePayment(SimulatePaymentRequestDTO request) {
+        // Vérifier que la réservation existe
+        Reservation reservation = reservationRepository.findById(request.getReservationId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Réservation non trouvée"));
+
+        // Récupérer l'historique associé
+        Historique historique = historiqueRepository.findByIdReservation(reservation.getIdReservation())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Historique non trouvé"));
+
+        // Vérifier que la réservation n'est pas déjà annulée
+        if (reservation.getStatutReservation() == StatutReservation.ANNULER) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cette réservation a été annulée");
+        }
+
+        // Vérifier que la réservation n'est pas déjà complètement payée
+        if (reservation.getStatutReservation() == StatutReservation.CONFIRMER) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cette réservation est déjà confirmée et payée");
+        }
+
+        SimulatePaymentResponseDTO response = new SimulatePaymentResponseDTO();
+        response.setReservationId(reservation.getIdReservation());
+        response.setPrixTotal(reservation.getPrixTotal());
+
+        // Générer un code de transaction simulé
+        String transactionCode = "SIM-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        response.setTransactionCode(transactionCode);
+
+        Date now = new Date();
+
+        if (request.isSimulateSuccess()) {
+            // === PAIEMENT RÉUSSI ===
+            double nouveauMontantPaye = reservation.getMontantPaye() + request.getAmount();
+            reservation.setMontantPaye(nouveauMontantPaye);
+            reservation.setTransactionCode(transactionCode);
+            reservation.setStatutPayement(StatutPayement.PAID);
+
+            // Vérifier si le paiement est complet
+            if (nouveauMontantPaye >= reservation.getPrixTotal()) {
+                // Paiement complet -> Confirmer la réservation
+                reservation.setStatutReservation(StatutReservation.CONFIRMER);
+                reservation.setDateConfirmation(now);
+
+                // === MISE À JOUR HISTORIQUE - CONFIRMATION ===
+                historique.setDateConfirmation(now);
+                historique.setStatusHistorique(StatutHistorique.VALIDER);
+
+                // Mettre à jour les places du voyage
+                Voyage voyage = voyageRepository.findById(reservation.getIdVoyage()).orElse(null);
+                if (voyage != null) {
+                    voyage.setNbrPlaceRestante(voyage.getNbrPlaceRestante() - reservation.getNbrPassager());
+                    voyage.setNbrPlaceConfirm(voyage.getNbrPlaceConfirm() + reservation.getNbrPassager());
+                    voyageRepository.save(voyage);
+                }
+
+                response.setFullyPaid(true);
+                response.setMessage("Paiement complet réussi. Réservation confirmée.");
+
+
+                // Notification de confirmation
+                try {
+                    notificationService.sendNotification(
+                            NotificationFactory.createReservationConfirmedEvent(reservation, voyage));
+                } catch (Exception e) {
+                    log.warn("Erreur notification: {}", e.getMessage());
+                }
+            } else {
+                // Paiement partiel -> VALIDER (en attente de paiement complet)
+                reservation.setStatutReservation(StatutReservation.VALIDER);
+
+                // === HISTORIQUE RESTE VALIDER (pas de changement) ===
+
+                response.setFullyPaid(false);
+                response.setMessage("Paiement partiel réussi. Reste à payer: " +
+                        (reservation.getPrixTotal() - nouveauMontantPaye) + " FCFA");
+
+                // Notification de paiement reçu
+                try {
+                    notificationService.sendNotification(
+                            NotificationFactory.createPaymentReceivedEvent(reservation));
+                } catch (Exception e) {
+                    log.warn("Erreur notification: {}", e.getMessage());
+                }
+            }
+
+            response.setSuccess(true);
+            response.setMontantPaye(nouveauMontantPaye);
+            response.setResteAPayer(Math.max(0, reservation.getPrixTotal() - nouveauMontantPaye));
+
+        } else {
+            // === PAIEMENT ÉCHOUÉ ===
+            reservation.setStatutPayement(StatutPayement.FAILED);
+            reservation.setTransactionCode(transactionCode);
+
+            // === HISTORIQUE - PAS DE CHANGEMENT (reste VALIDER, en attente) ===
+
+            response.setSuccess(false);
+            response.setMessage("Simulation d'échec de paiement");
+            response.setMontantPaye(reservation.getMontantPaye());
+            response.setResteAPayer(reservation.getPrixTotal() - reservation.getMontantPaye());
+            response.setFullyPaid(false);
+
+            // Notification d'échec
+            try {
+                notificationService.sendNotification(
+                        NotificationFactory.createPaymentFailedEvent(reservation));
+            } catch (Exception e) {
+                log.warn("Erreur notification: {}", e.getMessage());
+            }
+        }
+
+        // Sauvegarder les modifications
+        reservationRepository.save(reservation);
+        historiqueRepository.save(historique);
+
+        response.setStatutReservation(reservation.getStatutReservation());
+        response.setStatutPayement(reservation.getStatutPayement());
+
+        return response;
     }
 
 }

@@ -14,6 +14,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrganizationDto {
+  private UUID id;
+
   @JsonProperty("created_at")
   private LocalDateTime createdAt;
 
@@ -93,6 +95,7 @@ public class OrganizationDto {
     public static OrganizationDto fromEntity(Organization organization) {
         OrganizationDto dto = new OrganizationDto();
 
+        dto.setId(organization.getId());
         dto.setCreatedAt(organization.getCreatedAt());
         dto.setUpdatedAt(organization.getUpdatedAt());
         dto.setDeletedAt(organization.getDeletedAt());

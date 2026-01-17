@@ -7,6 +7,8 @@ import com.enspy26.gi.database_agence_voyage.dto.Reservation.ReservationCancelDT
 import com.enspy26.gi.database_agence_voyage.dto.Reservation.ReservationDTO;
 import com.enspy26.gi.database_agence_voyage.dto.Reservation.ReservationDetailDTO;
 import com.enspy26.gi.database_agence_voyage.dto.Reservation.ReservationPreviewDTO;
+import com.enspy26.gi.database_agence_voyage.dto.payment.SimulatePaymentRequestDTO;
+import com.enspy26.gi.database_agence_voyage.dto.payment.SimulatePaymentResponseDTO;
 import com.enspy26.gi.database_agence_voyage.dto.voyage.VoyageCancelDTO;
 import com.enspy26.gi.database_agence_voyage.models.Reservation;
 import com.enspy26.gi.annulation_reservation.services.AnnulationService;
@@ -20,6 +22,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -212,6 +215,29 @@ public class ReservationController {
 
     }
 
-    // PayementService payementService;
+    @Operation(
+            summary = "Simuler un paiement (mode test)",
+            description = "Permet de simuler un paiement sans passer par une vraie API de paiement. " +
+                    "Utilisez 'simulate_success: true' pour simuler un succès, 'false' pour un échec. " +
+                    "Si le montant payé atteint le prix total, la réservation passe en CONFIRMER."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Simulation de paiement effectuée",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = SimulatePaymentResponseDTO.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "400", description = "Réservation déjà annulée ou confirmée"),
+            @ApiResponse(responseCode = "404", description = "Réservation non trouvée")
+    })
+    @PostMapping("/simulate-payment")
+    public ResponseEntity<SimulatePaymentResponseDTO> simulatePayment(
+            @Valid @RequestBody SimulatePaymentRequestDTO request) {
+        SimulatePaymentResponseDTO response = reservationService.simulatePayment(request);
+        return ResponseEntity.ok(response);
+    }
 
 }

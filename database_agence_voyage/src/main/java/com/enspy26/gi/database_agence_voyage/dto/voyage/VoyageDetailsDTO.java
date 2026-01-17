@@ -33,6 +33,8 @@ public class VoyageDetailsDTO {
     private Date heureArrive;
     private int nbrPlaceReservable;
     private int nbrPlaceRestante;
+    private int nbrPlaceConfirm;
+    private int nbrPlaceReserve;
     private Date datePublication;
     private Date dateLimiteReservation;
     private Date dateLimiteConfirmation;

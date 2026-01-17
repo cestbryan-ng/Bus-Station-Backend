@@ -18,6 +18,26 @@ import lombok.Data;
  */
 @Data
 public class OrganizationStatisticsDTO {
+    // Pour graphique linéaire - Évolution mensuelle
+    @JsonProperty("reservations_per_month")
+    private Map<String, Integer> reservationsPerMonth;
+
+    @JsonProperty("revenue_per_month")
+    private Map<String, Double> revenuePerMonth;
+
+    // Pour graphique camembert/donut - Répartitions
+    @JsonProperty("reservations_by_status")
+    private Map<String, Integer> reservationsByStatus;
+
+    @JsonProperty("trips_by_status")
+    private Map<String, Integer> tripsByStatus;
+
+    // Pour graphique barres - Comparaison par agence
+    @JsonProperty("revenue_by_agency")
+    private Map<String, Double> revenueByAgency;
+
+    @JsonProperty("reservations_by_agency")
+    private Map<String, Integer> reservationsByAgency;
 
     @JsonProperty("organization_id")
     private UUID organizationId;
