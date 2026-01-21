@@ -209,31 +209,45 @@ public class StatisticService {
             double revenue = 0.0;
             int reservationCount = 0;
 
+            // Set pour éviter de compter plusieurs fois le même voyage
+            Set<UUID> voyagesComptabilises = new HashSet<>();
+
             for (LigneVoyage ligne : lignes) {
                 Voyage voyage = voyageRepository.findById(ligne.getIdVoyage()).orElse(null);
-                if (voyage != null && voyage.getDateDepartPrev() != null) {
-                    LocalDate voyageDate = voyage.getDateDepartPrev().toInstant()
-                            .atZone(ZoneId.systemDefault()).toLocalDate();
+                if (voyage != null) {
+                    List<Reservation> reservations = reservationRepository.findByIdVoyage(voyage.getIdVoyage());
 
-                    if (voyageDate.getYear() == mois.getYear() && voyageDate.getMonthValue() == mois.getMonthValue()) {
-                        totalPlaces += voyage.getNbrPlaceReservable();
-                        placesReservees += voyage.getNbrPlaceReserve();
+                    for (Reservation reservation : reservations) {
+                        if (reservation.getDateReservation() != null) {
+                            LocalDate dateReservation = reservation.getDateReservation().toInstant()
+                                    .atZone(ZoneId.systemDefault()).toLocalDate();
 
-                        List<Reservation> reservations = reservationRepository.findByIdVoyage(voyage.getIdVoyage());
-                        for (Reservation reservation : reservations) {
-                            reservationCount++;
-                            revenue += reservation.getPrixTotal();
+                            // Filtrer sur dateReservation
+                            if (dateReservation.getYear() == mois.getYear() &&
+                                    dateReservation.getMonthValue() == mois.getMonthValue()) {
 
-                            if (reservation.getStatutReservation() == StatutReservation.ANNULER) {
-                                annulations++;
+                                reservationCount++;
+                                revenue += reservation.getPrixTotal();
+                                placesReservees += reservation.getNbrPassager();
+
+                                if (reservation.getStatutReservation() == StatutReservation.ANNULER) {
+                                    annulations++;
+                                }
+
+                                // Compter les places totales du voyage une seule fois
+                                if (!voyagesComptabilises.contains(voyage.getIdVoyage())) {
+                                    totalPlaces += voyage.getNbrPlaceReservable() + voyage.getNbrPlaceReserve();
+                                    voyagesComptabilises.add(voyage.getIdVoyage());
+                                }
                             }
                         }
                     }
                 }
             }
 
-            double tauxOccupation = totalPlaces > 0 ? (double) placesReservees / totalPlaces : 0.0;
-            evolutionTauxOccupation.add(new EvolutionData(mois, (long) (tauxOccupation * 100), 0.0));
+            double tauxOccupation = totalPlaces > 0 ? (double) placesReservees / totalPlaces * 100 : 0.0;
+            tauxOccupation = Math.round(tauxOccupation * 100.0) / 100.0;  // Arrondi à 2 décimales
+            evolutionTauxOccupation.add(new EvolutionData(mois, 0, tauxOccupation));
             evolutionAnnulations.add(new EvolutionData(mois, annulations, 0.0));
             revenuePerMonth.put(monthKey, revenue);
             reservationsPerMonth.put(monthKey, reservationCount);
