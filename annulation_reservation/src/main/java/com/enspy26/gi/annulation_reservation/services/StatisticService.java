@@ -246,8 +246,7 @@ public class StatisticService {
             }
 
             double tauxOccupation = totalPlaces > 0 ? (double) placesReservees / totalPlaces * 100 : 0.0;
-            tauxOccupation = Math.round(tauxOccupation * 100.0) / 100.0;  // Arrondi à 2 décimales
-            evolutionTauxOccupation.add(new EvolutionData(mois, 0, tauxOccupation));
+            evolutionTauxOccupation.add(new EvolutionData(mois, (long) tauxOccupation, tauxOccupation));
             evolutionAnnulations.add(new EvolutionData(mois, annulations, 0.0));
             revenuePerMonth.put(monthKey, revenue);
             reservationsPerMonth.put(monthKey, reservationCount);
