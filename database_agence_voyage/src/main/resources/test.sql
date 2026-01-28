@@ -1225,4 +1225,30 @@ INSERT INTO public.passager (age, nbrbaggage, placechoisis, id_passager, idreser
 INSERT INTO public.historique (compensation, tauxannulation, dateannulation, dateconfirmation, datereservation, idhistorique, idreservation, causeannulation, origineannulation, statushistorique) VALUES
 (0, 0, NULL, NULL, '2025-12-19 23:42:18.024', '4b1ca620-2366-43a3-a886-5909445744c2', '29bb2dfe-114f-42b0-9f00-c5a0a0d48b07', NULL, NULL, 'VALIDER'),
 (0, 0, NULL, NULL, '2025-12-20 00:12:59.399', '0855c0d6-44e7-46a4-b0b2-ce2e9f35d9ea', 'b9e26ef0-606c-4eca-aa4c-1fc869c8ee3d', NULL, NULL, 'VALIDER'),
-(0, 0, NULL, '2026-01-16 18:36:55.468', '2025-12-24 13:54:59.786', 'd06c6e52-b23c-476c-a01f-c5740f06ccfe', '4c9d19ab-6cd2-410d-b252-e93b33c17013', NULL, NULL, 'VALIDER');
+(0, 0, NULL, '2026-01-16 18:36:55.468', '2025-12-24 13:54:59.786', 'd06c6e52-b23c-476c-a01f-c5740f06ccfe', '4c9d19ab-6cd2-410d-b252-e93b33c17013', NULL, NULL, 'VALIDER'),
+(1, 0, NULL, 'f8e9d123-4567-89ab-cdef-123456789abc', NULL, 'felix.tanzi@gmail.com', 'Tanzi', '$2a$10$p/fClXdQ1fhiKOXLEU.Bwe.VJiAVtGpvc5.SzGFm8PexRbBQwnV2C', 'Felix', 'USAGER', '655121019', 'felix'),
+(1, 0, NULL, 'a1b2c3d4-5678-90ef-abcd-567890abcdef', NULL, 'ngonga.gazo@gmail.com', 'Gazo', '$2a$10$p/fClXdQ1fhiKOXLEU.Bwe.VJiAVtGpvc5.SzGFm8PexRbBQwnV2C', 'Ngonga', 'USAGER', '655121020', 'gazo');
+
+
+----------------
+DELETE FROM public.politique_annulation_liste_taux_periode;
+DELETE FROM public.organization_keywords;
+DELETE FROM public.organization_business_domains;
+DELETE FROM public.coupon;
+DELETE FROM public.historique;
+DELETE FROM public.passager;
+DELETE FROM public.reservation;
+DELETE FROM public.baggage;
+DELETE FROM public.ligne_voyage;
+DELETE FROM public.employeagencevoyage;
+DELETE FROM public.chauffeuragencevoyage;
+DELETE FROM public.classvoyage;
+DELETE FROM public.vehicule;
+DELETE FROM public.voyage;
+DELETE FROM public.politiqueannulation;
+DELETE FROM public.agencevoyage;
+DELETE FROM public.organization;
+DELETE FROM public.app_user;
+DELETE FROM public.coordonnee;
+DELETE FROM public.soldeindemnisation;
+DELETE FROM public.role;

@@ -53,6 +53,7 @@ public class security {
                                     .requestMatchers("/statistics/**").permitAll()
                                     .requestMatchers("/notification/**").permitAll()
                                     .requestMatchers("/ws/**").permitAll()
+                                    .requestMatchers("/contact/**").permitAll()
                                     .anyRequest().authenticated();
                         })
                 .sessionManagement(httpSecuritySessionManagementConfiguger -> httpSecuritySessionManagementConfiguger

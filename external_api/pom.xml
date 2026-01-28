@@ -48,6 +48,14 @@
 			<artifactId>database_agence_voyage</artifactId>
 			<version>0.0.1</version>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>jakarta.mail</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>
