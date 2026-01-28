@@ -314,11 +314,15 @@ public class StatisticService {
 
     private long getNombreReservations(UUID agenceId) {
         List<LigneVoyage> lignesVoyage = ligneVoyageRepository.findByIdAgenceVoyage(agenceId);
-        long totalReservations = 0;
+        int totalReservations = 0;
 
-        for (LigneVoyage ligneVoyage : lignesVoyage) {
-            List<Reservation> reservations = reservationRepository.findByIdVoyage(ligneVoyage.getIdVoyage());
-            totalReservations += reservations.size();
+        for (LigneVoyage ligne : lignesVoyage) {
+            Voyage voyage = voyageRepository.findById(ligne.getIdVoyage()).orElse(null);
+
+            if (voyage != null) {
+                List<Reservation> reservations = reservationRepository.findByIdVoyage(voyage.getIdVoyage());
+                totalReservations += reservations.size();
+            }
         }
 
         return totalReservations;
@@ -332,11 +336,15 @@ public class StatisticService {
             reservationsParStatut.put(statut.name(), 0L);
         }
 
-        for (LigneVoyage ligneVoyage : lignesVoyage) {
-            List<Reservation> reservations = reservationRepository.findByIdVoyage(ligneVoyage.getIdVoyage());
-            for (Reservation reservation : reservations) {
-                String statut = reservation.getStatutReservation().name();
-                reservationsParStatut.put(statut, reservationsParStatut.get(statut) + 1);
+        for (LigneVoyage ligne : lignesVoyage) {
+            Voyage voyage = voyageRepository.findById(ligne.getIdVoyage()).orElse(null);
+
+            if (voyage != null) {
+                List<Reservation> reservations = reservationRepository.findByIdVoyage(voyage.getIdVoyage());
+                for (Reservation reservation : reservations) {
+                    String statut = reservation.getStatutReservation().name();
+                    reservationsParStatut.put(statut, reservationsParStatut.get(statut) + 1);
+                }
             }
         }
 
@@ -347,10 +355,15 @@ public class StatisticService {
         List<LigneVoyage> lignesVoyage = ligneVoyageRepository.findByIdAgenceVoyage(agenceId);
         double totalRevenus = 0.0;
 
-        for (LigneVoyage ligneVoyage : lignesVoyage) {
-            List<Reservation> reservations = reservationRepository.findByIdVoyage(ligneVoyage.getIdVoyage());
-            for (Reservation reservation : reservations) {
-                totalRevenus += reservation.getPrixTotal();
+        for (LigneVoyage ligne : lignesVoyage) {
+            Voyage voyage = voyageRepository.findById(ligne.getIdVoyage()).orElse(null);
+
+            if (voyage != null) {
+                List<Reservation> reservations = reservationRepository.findByIdVoyage(voyage.getIdVoyage());
+
+                for (Reservation reservation : reservations) {
+                    totalRevenus += reservation.getPrixTotal();
+                }
             }
         }
 
@@ -409,16 +422,21 @@ public class StatisticService {
             LocalDate mois = maintenant.minusMonths(i);
             long countReservations = 0;
 
-            for (LigneVoyage ligneVoyage : lignesVoyage) {
-                List<Reservation> reservations = reservationRepository.findByIdVoyage(ligneVoyage.getIdVoyage());
-                countReservations += reservations.stream()
-                        .filter(r -> {
-                            LocalDate dateReservation = r.getDateReservation()
-                                    .toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                            return dateReservation.getYear() == mois.getYear() &&
-                                    dateReservation.getMonth() == mois.getMonth();
-                        })
-                        .count();
+            for (LigneVoyage ligne : lignesVoyage) {
+                Voyage voyage = voyageRepository.findById(ligne.getIdVoyage()).orElse(null);
+
+                if (voyage != null) {
+                    List<Reservation> reservations = reservationRepository.findByIdVoyage(voyage.getIdVoyage());
+                    countReservations += reservations.stream()
+                            .filter(r -> {
+                                if (r.getDateReservation() == null) return false;
+                                LocalDate dateReservation = r.getDateReservation()
+                                        .toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                                return dateReservation.getYear() == mois.getYear() &&
+                                        dateReservation.getMonth() == mois.getMonth();
+                            })
+                            .count();
+                }
             }
 
             evolution.add(new EvolutionData(mois, countReservations, 0.0));
@@ -463,18 +481,22 @@ public class StatisticService {
             LocalDate mois = maintenant.minusMonths(i);
             double revenus = 0.0;
 
-            for (LigneVoyage ligneVoyage : lignesVoyage) {
-                List<Reservation> reservations = reservationRepository.findByIdVoyage(ligneVoyage.getIdVoyage());
-                revenus += reservations.stream()
-                        .filter(r -> {
-                            if (r.getDateReservation() == null) return false;
-                            LocalDate dateReservation = r.getDateReservation()
-                                    .toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                            return dateReservation.getYear() == mois.getYear() &&
-                                    dateReservation.getMonth() == mois.getMonth();
-                        })
-                        .mapToDouble(Reservation::getPrixTotal)
-                        .sum();
+            for (LigneVoyage ligne : lignesVoyage) {
+                Voyage voyage = voyageRepository.findById(ligne.getIdVoyage()).orElse(null);
+
+                if (voyage != null) {
+                    List<Reservation> reservations = reservationRepository.findByIdVoyage(voyage.getIdVoyage());
+                    revenus += reservations.stream()
+                            .filter(r -> {
+                                if (r.getDateReservation() == null) return false;
+                                LocalDate dateReservation = r.getDateReservation()
+                                        .toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                                return dateReservation.getYear() == mois.getYear() &&
+                                        dateReservation.getMonth() == mois.getMonth();
+                            })
+                            .mapToDouble(Reservation::getPrixTotal)
+                            .sum();
+                }
             }
 
             evolution.add(new EvolutionData(mois, 0, revenus));

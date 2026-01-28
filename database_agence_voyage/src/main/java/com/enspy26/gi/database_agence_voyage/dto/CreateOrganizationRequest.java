@@ -37,7 +37,6 @@ public class CreateOrganizationRequest {
   @Size(max = 500, message = "Description cannot be longer than 500 characters")
   private String description;
 
-  @NotEmpty(message = "At least one business domain is required")
   @JsonProperty("business_domains")
   private List<UUID> businessDomains;
 

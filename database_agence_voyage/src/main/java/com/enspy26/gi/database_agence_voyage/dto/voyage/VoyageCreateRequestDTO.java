@@ -1,5 +1,7 @@
 package com.enspy26.gi.database_agence_voyage.dto.voyage;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -20,7 +22,7 @@ public class VoyageCreateRequestDTO {
   private String description;
 
   @NotNull(message = "La date de départ prévue est obligatoire")
-  private Date dateDepartPrev;
+  private LocalDateTime dateDepartPrev;
 
   @NotNull(message = "Le lieu de départ est obligatoire")
   private String lieuDepart;
@@ -29,7 +31,7 @@ public class VoyageCreateRequestDTO {
   private String lieuArrive;
 
   @NotNull(message = "L'heure d'arrivée est obligatoire")
-  private Date heureArrive;
+  private LocalDateTime heureArrive;
 
   @NotNull(message = "Le point de départ est obligatoire")
   private String pointDeDepart;
@@ -40,7 +42,7 @@ public class VoyageCreateRequestDTO {
   @NotNull(message = "Le nombre de places réservables est obligatoire")
   private int nbrPlaceReservable; // Nbre de place qu'on peut encore reserver
 
-  private Date heureDepartEffectif; // Heure de départ effective
+  private LocalDateTime heureDepartEffectif; // Heure de départ effective
 
   private int nbrPlaceReserve; // Nbre de place qu'on a reserve
   private int nbrPlaceConfirm; // Nbre de place qu'on a confirmer
@@ -50,10 +52,10 @@ public class VoyageCreateRequestDTO {
   private int nbrPlaceRestante;
 
   @NotNull(message = "La date limite de réservation est obligatoire")
-  private Date dateLimiteReservation;
+  private LocalDateTime dateLimiteReservation;
 
   @NotNull(message = "La date limite de confirmation est obligatoire")
-  private Date dateLimiteConfirmation;
+  private LocalDateTime dateLimiteConfirmation;
 
   private String smallImage;
   private String bigImage;

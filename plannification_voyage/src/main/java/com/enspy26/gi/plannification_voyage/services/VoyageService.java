@@ -127,7 +127,10 @@ public class VoyageService {
             AgenceVoyage agenceVoyage = agenceVoyageRepository.findById(ligneVoyage.getIdAgenceVoyage()).orElse(null);
             ChauffeurAgenceVoyage chauffeur = chauffeurAgenceVoyageRepository.findById(ligneVoyage.getIdChauffeur())
                     .orElse(null);
-            User chauffeurUser = userRepository.findById(chauffeur.getUserId()).orElse(null);
+            User chauffeurUser = null;
+            if (chauffeur != null) {
+                chauffeurUser = userRepository.findById(chauffeur.getUserId()).orElse(null);
+            }
             Vehicule vehicule = this.vehiculeService.findById(ligneVoyage.getIdVehicule());
             List<Integer> placesReservees = new ArrayList<>();
             List<Reservation> reservations = reservationRepository.findByIdVoyage(voyage.getIdVoyage());
@@ -145,74 +148,109 @@ public class VoyageService {
 
     public VoyageDetailsDTO create(VoyageCreateRequestDTO voyageDto) {
         Voyage voyage = new Voyage();
-        // on peut effectuer des actions spécifiques d'abord
         voyage.setIdVoyage(UUID.randomUUID());
-        // Set all additional fields
         voyage.setTitre(voyageDto.getTitre());
         voyage.setDescription(voyageDto.getDescription());
-        voyage.setDateDepartPrev(voyageDto.getDateDepartPrev());
+
+        // Convertir LocalDateTime en Date
+        voyage.setDateDepartPrev(voyageDto.getDateDepartPrev() != null
+                ? Date.from(voyageDto.getDateDepartPrev().atZone(java.time.ZoneId.systemDefault()).toInstant())
+                : null);
+
         voyage.setLieuDepart(voyageDto.getLieuDepart());
         voyage.setLieuArrive(voyageDto.getLieuArrive());
         voyage.setPointDeDepart(voyageDto.getPointDeDepart());
         voyage.setPointArrivee(voyageDto.getPointArrivee());
-        voyage.setHeureArrive(voyageDto.getHeureArrive());
 
-        // Calcul de la durée du voyage à partir de la date de départ et d'arrivée
+        voyage.setHeureArrive(voyageDto.getHeureArrive() != null
+                ? Date.from(voyageDto.getHeureArrive().atZone(java.time.ZoneId.systemDefault()).toInstant())
+                : null);
+
+        // Calcul de la durée du voyage
         if (voyageDto.getDateDepartPrev() != null && voyageDto.getHeureArrive() != null) {
-            LocalDateTime depart = voyageDto.getDateDepartPrev().toInstant()
-                    .atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
-            LocalDateTime arrivee = voyageDto.getHeureArrive().toInstant()
-                    .atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
-            Duration duree = java.time.Duration.between(depart, arrivee);
+            Duration duree = Duration.between(voyageDto.getDateDepartPrev(), voyageDto.getHeureArrive());
             voyage.setDureeVoyage(duree);
         }
-        voyage.setHeureDepartEffectif(voyageDto.getHeureDepartEffectif());
+
+        voyage.setHeureDepartEffectif(voyageDto.getHeureDepartEffectif() != null
+                ? Date.from(voyageDto.getHeureDepartEffectif().atZone(java.time.ZoneId.systemDefault()).toInstant())
+                : null);
+
         voyage.setNbrPlaceReservable(voyageDto.getNbrPlaceReservable());
         voyage.setNbrPlaceReserve(voyageDto.getNbrPlaceReserve());
         voyage.setNbrPlaceConfirm(voyageDto.getNbrPlaceConfirm());
         voyage.setNbrPlaceRestante(voyageDto.getNbrPlaceRestante());
         voyage.setDatePublication(new Date());
-        voyage.setDateLimiteReservation(voyageDto.getDateLimiteReservation());
-        voyage.setDateLimiteConfirmation(voyageDto.getDateLimiteConfirmation());
-        voyage.setStatusVoyage(voyageDto.getStatusVoyage());
-        voyage.setSmallImage(
-                "https://media.istockphoto.com/id/2171315718/photo/car-for-traveling-with-a-mountain-road.jpg?s=1024x1024&w=is&k=20&c=y5XqIYLzxfb4kDTZpQgElyeiIGL34YzJrvHxbgp4Ud0=");
-        voyage.setBigImage(
-                "https://media.istockphoto.com/id/2171315718/photo/car-for-traveling-with-a-mountain-road.jpg?s=1024x1024&w=is&k=20&c=y5XqIYLzxfb4kDTZpQgElyeiIGL34YzJrvHxbgp4Ud0=");
-        voyage.setAmenities(VoyageMapper.amenitiesListToString(voyageDto.getAmenities())); // Set amenities as a list
 
-        // Création de la ligne de voyage associé
+        voyage.setDateLimiteReservation(voyageDto.getDateLimiteReservation() != null
+                ? Date.from(voyageDto.getDateLimiteReservation().atZone(java.time.ZoneId.systemDefault()).toInstant())
+                : null);
+
+        voyage.setDateLimiteConfirmation(voyageDto.getDateLimiteConfirmation() != null
+                ? Date.from(voyageDto.getDateLimiteConfirmation().atZone(java.time.ZoneId.systemDefault()).toInstant())
+                : null);
+
+        voyage.setStatusVoyage(voyageDto.getStatusVoyage());
+        voyage.setSmallImage(voyageDto.getSmallImage() != null ? voyageDto.getSmallImage() :
+                "https://media.istockphoto.com/id/2171315718/photo/car-for-traveling-with-a-mountain-road.jpg?s=1024x1024&w=is&k=20&c=y5XqIYLzxfb4kDTZpQgElyeiIGL34YzJrvHxbgp4Ud0=");
+        voyage.setBigImage(voyageDto.getBigImage() != null ? voyageDto.getBigImage() :
+                "https://media.istockphoto.com/id/2171315718/photo/car-for-traveling-with-a-mountain-road.jpg?s=1024x1024&w=is&k=20&c=y5XqIYLzxfb4kDTZpQgElyeiIGL34YzJrvHxbgp4Ud0=");
+        voyage.setAmenities(VoyageMapper.amenitiesListToString(voyageDto.getAmenities()));
+
+        // Reste du code identique...
         LigneVoyage ligneVoyage = new LigneVoyage();
-        if (agenceVoyageProxies.isAgenceVoyageExist(voyageDto.getAgenceVoyageId())) {
-            ligneVoyage.setIdAgenceVoyage(voyageDto.getAgenceVoyageId());
-        } else {
+        if (!agenceVoyageProxies.isAgenceVoyageExist(voyageDto.getAgenceVoyageId())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "L'agence voyage n'existe pas.");
         }
+        ligneVoyage.setIdAgenceVoyage(voyageDto.getAgenceVoyageId());
+
         ClassVoyage classVoyage = this.classVoyageRepository.findById(voyageDto.getClassVoyageId())
-                .orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "La classe de voyage n'existe pas."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "La classe de voyage n'existe pas."));
         ligneVoyage.setIdClassVoyage(classVoyage.getIdClassVoyage());
 
         Vehicule vehicule = this.vehiculeService.findById(voyageDto.getVehiculeId());
-        if (vehicule != null) {
-            ligneVoyage.setIdVehicule(voyageDto.getVehiculeId());
-        } else {
+        if (vehicule == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le vehicule n'existe pas.");
         }
+        ligneVoyage.setIdVehicule(voyageDto.getVehiculeId());
 
-        // On verifie si l'utilisateur chauffeur existe et s'il appartient bien à
-        // l'agence de voyage qui cree le voyage
-        ChauffeurAgenceVoyage chauffeur = this.chauffeurAgenceVoyageRepository.findByUserId(voyageDto.getChauffeurId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Le chauffeur n'existe pas."));
+// Validation du chauffeur
+        log.info("Vérification du chauffeur: {}", voyageDto.getChauffeurId());
+        List<ChauffeurAgenceVoyage> chauffeurs = this.chauffeurAgenceVoyageRepository
+                .findAllByUserId(voyageDto.getChauffeurId());
+
+        if (chauffeurs.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Le chauffeur n'existe pas.");
+        }
+
+        if (chauffeurs.size() > 1) {
+            log.warn("Plusieurs chauffeurs trouvés pour userId {}: {} résultats",
+                    voyageDto.getChauffeurId(), chauffeurs.size());
+
+            // Filtrer pour prendre celui qui appartient à l'agence
+            chauffeurs = chauffeurs.stream()
+                    .filter(c -> c.getAgenceVoyageId().equals(voyageDto.getAgenceVoyageId()))
+                    .collect(Collectors.toList());
+
+            if (chauffeurs.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Aucun chauffeur trouvé pour cette agence avec cet userId.");
+            }
+        }
+
+        ChauffeurAgenceVoyage chauffeur = chauffeurs.get(0);
+
         User chauffUser = this.userRepository.findById(chauffeur.getUserId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Le chauffeur n'existe pas."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "L'utilisateur chauffeur n'existe pas."));
+
         if (!chauffeur.getAgenceVoyageId().equals(voyageDto.getAgenceVoyageId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Le chauffeur n'appartient pas à l'agence de voyage.");
         }
+
         AgenceVoyage agenceVoyage = agenceVoyageRepository.findById(voyageDto.getAgenceVoyageId())
-                .orElseThrow(
-                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "L'agence de voyage n'existe pas."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "L'agence de voyage n'existe pas."));
         ligneVoyage.setIdChauffeur(chauffeur.getChauffeurId());
 
         ligneVoyage.setIdLigneVoyage(UUID.randomUUID());
@@ -225,15 +263,13 @@ public class VoyageService {
         try {
             notificationService.sendNotification(
                     NotificationFactory.createVoyageCreatedEvent(voyage, agenceVoyage.getUserId()));
-            // Notifier le chauffeur assigné
             notificationService.sendNotification(
                     NotificationFactory.createDriverAssignedEvent(chauffeur.getUserId(), voyage));
         } catch (Exception e) {
             log.warn("Erreur lors de l'envoi des notifications de création de voyage: {}", e.getMessage());
         }
 
-        VoyageDetailsDTO voyageDetailsDTO = voyageMapper.tovoyageDetailsDTO(voyage,
-                agenceVoyageRepository.findById(ligneVoyage.getIdAgenceVoyage()).orElse(null), classVoyage,
+        VoyageDetailsDTO voyageDetailsDTO = voyageMapper.tovoyageDetailsDTO(voyage, agenceVoyage, classVoyage,
                 vehicule, new ArrayList<>(), chauffUser);
         return voyageDetailsDTO;
     }
@@ -285,7 +321,10 @@ public class VoyageService {
                         .orElse(null);
                 ChauffeurAgenceVoyage chauffeur = chauffeurAgenceVoyageRepository.findById(ligneVoyage.getIdChauffeur())
                         .orElse(null);
-                User chauffeurUser = userRepository.findById(chauffeur.getUserId()).orElse(null);
+                User chauffeurUser = null;
+                if (chauffeur != null) {
+                    chauffeurUser = userRepository.findById(chauffeur.getUserId()).orElse(null);
+                }
                 Vehicule vehicule = this.vehiculeService.findById(ligneVoyage.getIdVehicule());
                 List<Integer> placesReservees = new ArrayList<>();
                 List<Reservation> reservations = reservationRepository.findByIdVoyage(voyage.getIdVoyage());
