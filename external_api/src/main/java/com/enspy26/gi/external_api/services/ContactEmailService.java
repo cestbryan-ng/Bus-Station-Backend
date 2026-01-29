@@ -122,7 +122,7 @@ public class ContactEmailService {
                             overflow: hidden;
                         }
                         .header {
-                            background: #6149cd;
+                            background: #7cab1b;
                             color: white;
                             padding: 30px;
                             text-align: center;
@@ -137,7 +137,7 @@ public class ContactEmailService {
                         }
                         .info-block {
                             background-color: #f8f9fa;
-                            border-left: 4px solid #667eea;
+                            border-left: 4px solid #679419;
                             padding: 15px;
                             margin-bottom: 20px;
                             border-radius: 5px;
@@ -167,7 +167,7 @@ public class ContactEmailService {
                         }
                         .btn-reply {
                             display: inline-block;
-                            background-color: #6149CD;
+                            background-color: #7cab1b;
                             color: white;
                             padding: 12px 30px;
                             text-decoration: none;
