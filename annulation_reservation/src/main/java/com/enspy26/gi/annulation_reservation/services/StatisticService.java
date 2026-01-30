@@ -657,7 +657,7 @@ public class StatisticService {
 
 // Répartitions
         Map<String, Integer> reservationsByStatus = new HashMap<>();
-        reservationsByStatus.put("EN_ATTENTE", 0);
+        reservationsByStatus.put("RESERVER", 0);
         reservationsByStatus.put("CONFIRMER", 0);
         reservationsByStatus.put("ANNULER", 0);
         reservationsByStatus.put("VALIDER", 0);
@@ -697,7 +697,7 @@ public class StatisticService {
                             agencyRevenue += reservation.getPrixTotal();
 
                             // Reservations by status
-                            String resStatus = reservation.getStatutReservation() != null ? reservation.getStatutReservation().name() : "EN_ATTENTE";
+                            String resStatus = reservation.getStatutReservation() != null ? reservation.getStatutReservation().name() : "RESERVER";
                             reservationsByStatus.put(resStatus, reservationsByStatus.getOrDefault(resStatus, 0) + 1);
 
                             // Par mois
@@ -960,7 +960,7 @@ public class StatisticService {
 
 // Répartitions
         Map<String, Integer> reservationsByStatus = new HashMap<>();
-        reservationsByStatus.put("EN_ATTENTE", 0);
+        reservationsByStatus.put("RESERVER", 0);
         reservationsByStatus.put("CONFIRMER", 0);
         reservationsByStatus.put("ANNULER", 0);
         reservationsByStatus.put("VALIDER", 0);
@@ -1009,7 +1009,7 @@ public class StatisticService {
                             agencyRevenue += reservation.getPrixTotal();
 
                             // Reservations by status
-                            String resStatus = reservation.getStatutReservation() != null ? reservation.getStatutReservation().name() : "EN_ATTENTE";
+                            String resStatus = reservation.getStatutReservation() != null ? reservation.getStatutReservation().name() : "RESERVER";
                             reservationsByStatus.put(resStatus, reservationsByStatus.getOrDefault(resStatus, 0) + 1);
 
                             // Par mois

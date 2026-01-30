@@ -43,7 +43,7 @@ public class EmailTemplateEngine {
                 }
                 
                 .header {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    background: linear-gradient(135deg, #7cab1b 0%, #679419 100%);
                     color: white;
                     padding: 30px;
                     text-align: center;
@@ -78,7 +78,7 @@ public class EmailTemplateEngine {
                 
                 .highlight {
                     background-color: #e8f4fd;
-                    border-left: 4px solid #667eea;
+                    border-left: 4px solid #7cab1b;
                     padding: 20px;
                     margin: 20px 0;
                     border-radius: 0 8px 8px 0;
@@ -87,7 +87,7 @@ public class EmailTemplateEngine {
                 .button {
                     display: inline-block;
                     padding: 15px 30px;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    background: linear-gradient(135deg, #7cab1b 0%, #679419 100%);
                     color: white;
                     text-decoration: none;
                     border-radius: 8px;
