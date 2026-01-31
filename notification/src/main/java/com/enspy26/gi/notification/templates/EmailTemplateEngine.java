@@ -15,195 +15,168 @@ import java.util.Map;
 public class EmailTemplateEngine {
 
     private static final String BASE_TEMPLATE = """
-        <!DOCTYPE html>
-        <html lang="fr">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>{{TITLE}}</title>
-            <style>
-                * {
-                    margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
-                }
-                
-                body {
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    line-height: 1.6;
-                    color: #333;
-                    background-color: #f8f9fa;
-                }
-                
-                .email-container {
-                    max-width: 600px;
-                    margin: 0 auto;
-                    background-color: #ffffff;
-                    box-shadow: 0 0 20px rgba(0,0,0,0.1);
-                }
-                
-                .header {
-                    background: linear-gradient(135deg, #7cab1b 0%, #679419 100%);
-                    color: white;
-                    padding: 30px;
-                    text-align: center;
-                }
-                
-                .logo {
-                    font-size: 28px;
-                    font-weight: bold;
-                    margin-bottom: 10px;
-                }
-                
-                .header-subtitle {
-                    font-size: 16px;
-                    opacity: 0.9;
-                }
-                
-                .content {
-                    padding: 40px 30px;
-                }
-                
-                .greeting {
-                    font-size: 18px;
-                    margin-bottom: 20px;
-                    color: #2c3e50;
-                }
-                
-                .message {
-                    font-size: 16px;
-                    margin-bottom: 30px;
-                    line-height: 1.8;
-                }
-                
-                .highlight {
-                    background-color: #e8f4fd;
-                    border-left: 4px solid #7cab1b;
-                    padding: 20px;
-                    margin: 20px 0;
-                    border-radius: 0 8px 8px 0;
-                }
-                
-                .button {
-                    display: inline-block;
-                    padding: 15px 30px;
-                    background: linear-gradient(135deg, #7cab1b 0%, #679419 100%);
-                    color: white;
-                    text-decoration: none;
-                    border-radius: 8px;
-                    font-weight: bold;
-                    margin: 20px 0;
-                    transition: transform 0.2s;
-                }
-                
-                .button:hover {
-                    transform: translateY(-2px);
-                }
-                
-                .details-table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin: 20px 0;
-                    background-color: #f8f9fa;
-                    border-radius: 8px;
-                    overflow: hidden;
-                }
-                
-                .details-table th,
-                .details-table td {
-                    padding: 15px;
-                    text-align: left;
-                    border-bottom: 1px solid #dee2e6;
-                }
-                
-                .details-table th {
-                    background-color: #e9ecef;
-                    font-weight: bold;
-                    color: #495057;
-                }
-                
-                .footer {
-                    background-color: #2c3e50;
-                    color: white;
-                    padding: 30px;
-                    text-align: center;
-                    font-size: 14px;
-                }
-                
-                .footer-links {
-                    margin: 20px 0;
-                }
-                
-                .footer-links a {
-                    color: #bdc3c7;
-                    text-decoration: none;
-                    margin: 0 15px;
-                }
-                
-                .social-links {
-                    margin: 20px 0;
-                }
-                
-                .social-links a {
-                    display: inline-block;
-                    margin: 0 10px;
-                    padding: 10px;
-                    background-color: #34495e;
-                    border-radius: 50%;
-                    text-decoration: none;
-                    color: white;
-                }
-                
-                @media (max-width: 600px) {
-                    .email-container {
+            <!DOCTYPE html>
+            <html lang="fr">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>{{TITLE}}</title>
+                <style>
+                    * {
                         margin: 0;
-                        box-shadow: none;
+                        padding: 0;
+                        box-sizing: border-box;
                     }
-                    
-                    .content {
-                        padding: 20px 15px;
+            
+                    body {
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                        line-height: 1.5;
+                        color: #171717;
+                        background-color: #fafafa;
+                        -webkit-font-smoothing: antialiased;
                     }
-                    
-                    .header {
-                        padding: 20px 15px;
+            
+                    .email-wrapper {
+                        max-width: 600px;
+                        margin: 20px auto;
+                        background-color: #ffffff;
                     }
-                }
-            </style>
-        </head>
-        <body>
-            <div class="email-container">
-                <div class="header">
-                    <div class="logo">{{FROMNAME}}</div>
-                    <div class="header-subtitle">Votre partenaire de voyage de confiance</div>
-                </div>
-                
-                <div class="content">
-                    {{CONTENT}}
-                </div>
-                
-                <div class="footer">
-                    <p><strong>VoyageExpress</strong></p>
-                    <p>Votre plateforme de gestion de voyage</p>
-                    
-                    <div class="footer-links">
-                        <a href="#">Nous contacter</a>
-                        <a href="#">Support</a>
-                        <a href="#">Conditions d'utilisation</a>
+            
+                    .email-header {
+                        padding: 24px 32px;
+                        border-bottom: 1px solid #e5e5e5;
+                    }
+            
+                    .logo-text {
+                        font-size: 20px;
+                        font-weight: 600;
+                        color: #171717;
+                        letter-spacing: -0.5px;
+                    }
+            
+                    .email-body {
+                        padding: 32px;
+                    }
+            
+                    .email-body p {
+                        margin-bottom: 16px;
+                        font-size: 15px;
+                        color: #404040;
+                    }
+            
+                    .email-body p:last-child {
+                        margin-bottom: 0;
+                    }
+            
+                    .info-box {
+                        background-color: #f5f5f5;
+                        border-left: 3px solid #7cab1b;
+                        padding: 16px 20px;
+                        margin: 24px 0;
+                    }
+            
+                    .info-box p {
+                        margin-bottom: 8px;
+                        font-size: 14px;
+                    }
+            
+                    .info-box p:last-child {
+                        margin-bottom: 0;
+                    }
+            
+                    .info-label {
+                        color: #737373;
+                        font-size: 13px;
+                    }
+            
+                    .info-value {
+                        color: #171717;
+                        font-weight: 500;
+                    }
+            
+                    .action-button {
+                        display: inline-block;
+                        padding: 12px 24px;
+                        background-color: #7cab1b;
+                        color: #171717;
+                        text-decoration: none;
+                        font-weight: 500;
+                        font-size: 14px;
+                        margin: 24px 0 16px 0;
+                    }
+            
+                    .divider {
+                        height: 1px;
+                        background-color: #e5e5e5;
+                        margin: 24px 0;
+                    }
+            
+                    .email-footer {
+                        padding: 24px 32px;
+                        background-color: #fafafa;
+                        border-top: 1px solid #e5e5e5;
+                    }
+            
+                    .footer-text {
+                        font-size: 13px;
+                        color: #737373;
+                        margin-bottom: 12px;
+                    }
+            
+                    .footer-links {
+                        margin-top: 16px;
+                    }
+            
+                    .footer-links a {
+                        color: #525252;
+                        text-decoration: none;
+                        font-size: 13px;
+                        margin-right: 16px;
+                    }
+            
+                    .footer-links a:hover {
+                        text-decoration: underline;
+                    }
+            
+                    @media (max-width: 600px) {
+                        .email-wrapper {
+                            margin: 0;
+                        }
+            
+                        .email-header,
+                        .email-body,
+                        .email-footer {
+                            padding: 20px;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="email-wrapper">
+                    <div class="email-header">
+                        <div class="logo-text">{{FROMNAME}}</div>
                     </div>
-                    
-                    <div class="social-links">
-                        <a href="#">📧</a>
-                        <a href="#">📱</a>
-                        <a href="#">🌐</a>
+            
+                    <div class="email-body">
+                        {{CONTENT}}
                     </div>
-                    
-                    <p style="margin-top: 20px; font-size: 12px; opacity: 0.8;">
-                        © 2025 VoyageExpress. Tous droits réservés.
-                    </p>
+            
+                    <div class="email-footer">
+                        <p class="footer-text">
+                            Cet email a été envoyé par {{FROMNAME}}.
+                        </p>
+                        <p class="footer-text">
+                            Pour toute question, contactez notre support.
+                        </p>
+                        <div class="footer-links">
+                            <a href="#">Support</a>
+                            <a href="#">Conditions</a>
+                            <a href="#">Confidentialité</a>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </body>
-        </html>
+            </body>
+            </html>
         """;
 
     public String generateEmailContent(NotificationContext context) {
@@ -245,7 +218,7 @@ public class EmailTemplateEngine {
             </div>
             
             <div class="highlight">
-                <h3>🚍 Détails du voyage</h3>
+                <h3>Détails du voyage</h3>
                 <table class="details-table">
                     <tr>
                         <th>Titre</th>
@@ -287,7 +260,7 @@ public class EmailTemplateEngine {
             </div>
             
             <div class="highlight">
-                <h3>❌ Voyage annulé</h3>
+                <h3>Voyage annulé</h3>
                 <table class="details-table">
                     <tr>
                         <th>Titre</th>
@@ -330,7 +303,7 @@ public class EmailTemplateEngine {
             </div>
             
             <div class="highlight">
-                <h3>✅ Réservation confirmée</h3>
+                <h3>Réservation confirmée</h3>
                 <table class="details-table">
                     <tr>
                         <th>Numéro de réservation</th>
@@ -379,7 +352,7 @@ public class EmailTemplateEngine {
             </div>
             
             <div class="highlight">
-                <h3>✅ Réservation confirmée</h3>
+                <h3>Réservation confirmée</h3>
                 <table class="details-table">
                     <tr>
                         <th>Numéro de réservation</th>
@@ -422,7 +395,7 @@ public class EmailTemplateEngine {
             </div>
             
             <div class="highlight">
-                <h3>❌ Réservation annulée</h3>
+                <h3>Réservation annulée</h3>
                 <table class="details-table">
                     <tr>
                         <th>Numéro de réservation</th>
@@ -455,7 +428,7 @@ public class EmailTemplateEngine {
             </div>
             
             <div class="highlight">
-                <h3>💰 Paiement reçu</h3>
+                <h3>Paiement reçu</h3>
                 <table class="details-table">
                     <tr>
                         <th>Réservation</th>
@@ -497,7 +470,7 @@ public class EmailTemplateEngine {
             </div>
             
             <div class="highlight" style="border-left-color: #e74c3c; background-color: #fdf2f2;">
-                <h3>❌ Échec du paiement</h3>
+                <h3>Échec du paiement</h3>
                 <table class="details-table">
                     <tr>
                         <th>Réservation</th>
@@ -535,7 +508,7 @@ public class EmailTemplateEngine {
             </div>
             
             <div class="highlight">
-                <h3>🚀 Commencez votre aventure</h3>
+                <h3>Commencez votre aventure</h3>
                 <p>Avec VoyageExpress, vous pouvez :</p>
                 <ul style="margin: 15px 0; padding-left: 20px;">
                     <li>Réserver des voyages en quelques clics</li>
@@ -568,7 +541,7 @@ public class EmailTemplateEngine {
             </div>
             
             <div class="highlight">
-                <h3>🏢 Votre agence est prête</h3>
+                <h3>Votre agence est prête</h3>
                 <table class="details-table">
                     <tr>
                         <th>Nom de l'agence</th>
@@ -605,7 +578,7 @@ public class EmailTemplateEngine {
             </div>
             
             <div class="highlight">
-                <h3>🚗 Nouveau voyage assigné</h3>
+                <h3>Nouveau voyage assigné</h3>
                 <table class="details-table">
                     <tr>
                         <th>Voyage</th>
@@ -652,7 +625,7 @@ public class EmailTemplateEngine {
             </div>
             
             <div class="highlight">
-                <h3>🎯 Votre nouveau rôle</h3>
+                <h3>Votre nouveau rôle</h3>
                 <table class="details-table">
                     <tr>
                         <th>Poste</th>
@@ -693,7 +666,7 @@ public class EmailTemplateEngine {
             </div>
             
             <div class="highlight">
-                <h3>📢 Notification</h3>
+                <h3>Notification</h3>
                 <p>Type: %s</p>
             </div>
             
